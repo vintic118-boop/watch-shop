@@ -4,7 +4,8 @@ import { ServiceTypeSchema } from '../enums/ServiceType.schema';
 import { ServiceRequestStatusSchema } from '../enums/ServiceRequestStatus.schema';
 import { ServiceScopeSchema } from '../enums/ServiceScope.schema';
 import { InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema as InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema } from './InvoiceUncheckedCreateNestedManyWithoutServiceReqInput.schema';
-import { MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema as MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema } from './MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInput.schema'
+import { MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema as MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema } from './MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInput.schema';
+import { TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema as TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema } from './TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInput.schema'
 
 const makeSchema = () => z.object({
   id: z.string().optional(),
@@ -33,8 +34,10 @@ const makeSchema = () => z.object({
   technicianNameSnap: z.string().optional().nullable(),
   skuSnapshot: z.string().optional().nullable(),
   primaryImageUrlSnapshot: z.string().optional().nullable(),
-  Invoice: z.lazy(() => InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema),
-  maintenance: z.lazy(() => MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema)
+  dummy_technical_rel: z.string().optional().nullable(),
+  invoice: z.lazy(() => InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema),
+  maintenance: z.lazy(() => MaintenanceRecordUncheckedCreateNestedManyWithoutServiceRequestInputObjectSchema),
+  technicalAssessment: z.lazy(() => TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema).optional()
 }).strict();
 export const ServiceRequestUncheckedCreateInputObjectSchema: z.ZodType<Prisma.ServiceRequestUncheckedCreateInput> = makeSchema() as unknown as z.ZodType<Prisma.ServiceRequestUncheckedCreateInput>;
 export const ServiceRequestUncheckedCreateInputObjectZodSchema = makeSchema();

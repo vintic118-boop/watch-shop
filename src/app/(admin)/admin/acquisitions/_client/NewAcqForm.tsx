@@ -15,9 +15,8 @@ type Props = { vendors: Vendor[] };
 
 type WatchFlags = {
     hasStrap: boolean;
-    isServiced: boolean;
+    needService: boolean;
     hasClasp: boolean;
-    needsService: boolean;
 };
 
 type WatchLine = {
@@ -62,6 +61,27 @@ const STRAP_MATERIALS: Array<{ value: StrapMaterial; label: string }> = [
     { value: "SPECIAL", label: "Khác" },
 ];
 
+const QUICK_GUIDE_GROUPS = [
+    {
+        title: "Cơ bản",
+        items: [
+            { label: "Brand", hints: ["seiko", "citizen", "omega", "longines"] },
+            { label: "Máy", hints: ["tự động", "automatic", "pin", "quartz", "kinetic"] },
+            { label: "Dáng", hints: ["tròn", "vuông", "tank", "chữ nhật"] },
+            { label: "Mặt", hints: ["mặt đen", "mặt trắng", "bạc", "xanh", "champagne"] },
+            { label: "Dây", hints: ["dây thép", "dây da", "cao su", "nato"] },
+        ],
+    },
+    {
+        title: "Nâng cao",
+        items: [
+            { label: "Fullset", hints: ["fullset", "có hộp", "có sổ", "có thẻ", "no box"] },
+            { label: "Vỏ", hints: ["vỏ thép", "titanium", "vàng", "demi"] },
+            { label: "Danh mục", hints: ["dress", "tool", "diver", "chronograph", "tank"] },
+        ],
+    },
+];
+
 function uid() {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
     return Math.random().toString(36).slice(2, 10);
@@ -70,9 +90,8 @@ function uid() {
 function defaultWatchFlags(): WatchFlags {
     return {
         hasStrap: true,
-        isServiced: false,
+        needService: true,
         hasClasp: false,
-        needsService: true,
     };
 }
 
@@ -81,13 +100,19 @@ function buildWatchLineState(
     currentFlags?: WatchFlags
 ): Pick<WatchLine, "title" | "quickSpec" | "watchFlags"> {
     const quickSpec = parseQuickWatchSpec(title);
+
+    const isBracelet = quickSpec?.strapType === "STEEL";
+
     return {
         title,
         quickSpec,
-        watchFlags: applyQuickWatchSpecToFlags(quickSpec, currentFlags ?? defaultWatchFlags()),
+        watchFlags: {
+            hasStrap: isBracelet ? true : (currentFlags?.hasStrap ?? true),
+            hasClasp: isBracelet ? true : (currentFlags?.hasClasp ?? false),
+            needService: currentFlags?.needService ?? true,
+        },
     };
 }
-
 function newWatchLine(): WatchLine {
     const base = buildWatchLineState("");
     return {
@@ -172,6 +197,45 @@ function SectionCard({
     );
 }
 
+function GuideContent() {
+    return (
+        <div className="space-y-4">
+            {QUICK_GUIDE_GROUPS.map((group) => (
+                <div
+                    key={group.title}
+                    className="rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                >
+                    <div className="mb-3 text-sm font-semibold text-slate-800">{group.title}</div>
+
+                    <div className="space-y-3">
+                        {group.items.map((item) => (
+                            <div key={item.label}>
+                                <div className="mb-1 text-sm font-medium text-slate-700">{item.label}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {item.hints.map((hint) => (
+                                        <span
+                                            key={hint}
+                                            className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600"
+                                        >
+                                            {hint}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+                <div className="font-medium">Ví dụ</div>
+                <div className="mt-1 leading-6">Seiko tự động mặt trắng dây thép có hộp sổ thẻ</div>
+            </div>
+        </div>
+    );
+}
+
+
 export default function NewAcqForm({ vendors }: Props) {
     const [formData, setFormData] = useState({
         currency: "VND",
@@ -214,18 +278,29 @@ export default function NewAcqForm({ vendors }: Props) {
     }
 
     function setWatchTitle(id: string, title: string) {
-        setWatchLines((prev) =>
-            prev.map((line) => {
+        setWatchLines((prev) => {
+            const next = prev.map((line) => {
                 if (line.id !== id) return line;
-                const next = buildWatchLineState(title, line.watchFlags);
+                const parsed = buildWatchLineState(title, line.watchFlags);
                 return {
                     ...line,
-                    title: next.title,
-                    quickSpec: next.quickSpec,
-                    watchFlags: next.watchFlags,
+                    title: parsed.title,
+                    quickSpec: parsed.quickSpec,
+                    watchFlags: parsed.watchFlags,
                 };
-            })
-        );
+            });
+
+            const editedIndex = next.findIndex((x) => x.id === id);
+            const isLastRow = editedIndex === next.length - 1;
+            const hasValue = title.trim().length > 0;
+            const lastRowHasContent = next[next.length - 1]?.title?.trim().length > 0;
+
+            if (isLastRow && hasValue && lastRowHasContent) {
+                next.push(newWatchLine());
+            }
+
+            return next;
+        });
     }
 
     function setWatchFlag(id: string, key: keyof WatchFlags, value: boolean) {
@@ -324,7 +399,7 @@ export default function NewAcqForm({ vendors }: Props) {
 
     return (
         <form id="acq-form" onSubmit={onSubmit} className="w-full min-w-0 pb-24">
-            <div className="mx-auto w-full max-w-7xl space-y-6 px-4 md:px-6">
+            <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-28 xl:max-w-7xl">
                 <div className="flex items-center justify-between gap-4">
                     <h1 className="text-xl font-semibold">Tạo phiếu nhập (DRAFT)</h1>
                     <Link
@@ -436,6 +511,7 @@ export default function NewAcqForm({ vendors }: Props) {
                         </SectionCard>
                     </div>
 
+
                     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div>
@@ -445,13 +521,6 @@ export default function NewAcqForm({ vendors }: Props) {
                                 </p>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setWatchLines((prev) => [...prev, newWatchLine()])}
-                                className="shrink-0 rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50"
-                            >
-                                + Thêm đồng hồ
-                            </button>
                         </div>
 
                         <div className="space-y-4">
@@ -460,8 +529,8 @@ export default function NewAcqForm({ vendors }: Props) {
 
                                 return (
                                     <div key={line.id} className="rounded-xl border border-slate-200 p-4">
-                                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-                                            <div className="xl:col-span-7">
+                                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_92px_120px_72px]">
+                                            <div>
                                                 <label className="mb-1 block text-sm font-medium text-slate-700">
                                                     Mô tả nhanh / tên đồng hồ
                                                 </label>
@@ -474,7 +543,7 @@ export default function NewAcqForm({ vendors }: Props) {
                                                 <QuickRuleChips spec={line.quickSpec} />
                                             </div>
 
-                                            <div className="xl:col-span-2">
+                                            <div>
                                                 <label className="mb-1 block text-sm font-medium text-slate-700">SL</label>
                                                 <input
                                                     type="number"
@@ -487,7 +556,7 @@ export default function NewAcqForm({ vendors }: Props) {
                                                 />
                                             </div>
 
-                                            <div className="xl:col-span-2">
+                                            <div>
                                                 <label className="mb-1 block text-sm font-medium text-slate-700">Giá nhập</label>
                                                 <input
                                                     type="number"
@@ -500,7 +569,7 @@ export default function NewAcqForm({ vendors }: Props) {
                                                 />
                                             </div>
 
-                                            <div className="xl:col-span-1 flex items-end justify-end">
+                                            <div className="flex items-end justify-end">
                                                 <button
                                                     type="button"
                                                     onClick={() =>
@@ -520,9 +589,9 @@ export default function NewAcqForm({ vendors }: Props) {
                                         <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                             <div className="flex flex-wrap gap-2">
                                                 <FlagCheckbox
-                                                    checked={line.watchFlags.needsService}
+                                                    checked={line.watchFlags.needService}
                                                     label="Service"
-                                                    onChange={(v) => setWatchFlag(line.id, "needsService", v)}
+                                                    onChange={(v) => setWatchFlag(line.id, "needService", v)}
                                                 />
                                             </div>
 
@@ -533,6 +602,16 @@ export default function NewAcqForm({ vendors }: Props) {
                                     </div>
                                 );
                             })}
+                        </div>
+
+                        <div className="mt-4 flex justify-start">
+                            <button
+                                type="button"
+                                onClick={() => setWatchLines((prev) => [...prev, newWatchLine()])}
+                                className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50"
+                            >
+                                + Thêm đồng hồ
+                            </button>
                         </div>
                     </section>
 
@@ -720,8 +799,30 @@ export default function NewAcqForm({ vendors }: Props) {
                     ) : null}
                 </div>
 
-                <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:px-6">
-                    <div className="mx-auto flex w-full max-w-7xl items-center justify-end gap-3">
+
+            </div>
+
+            <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:px-6">
+                <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setWatchLines((prev) => [...prev, newWatchLine()])}
+                            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+                        >
+                            + Thêm đồng hồ
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setStrapLines((prev) => [...prev, newStrapLine()])}
+                            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+                        >
+                            + Thêm dây
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-3">
                         {showAfterCreate ? (
                             <button
                                 type="button"
@@ -742,6 +843,8 @@ export default function NewAcqForm({ vendors }: Props) {
                     </div>
                 </div>
             </div>
-        </form>
+
+
+        </form >
     );
 }

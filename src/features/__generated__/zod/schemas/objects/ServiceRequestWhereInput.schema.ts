@@ -26,7 +26,9 @@ import { ProductVariantWhereInputObjectSchema as ProductVariantWhereInputObjectS
 import { VendorNullableScalarRelationFilterObjectSchema as VendorNullableScalarRelationFilterObjectSchema } from './VendorNullableScalarRelationFilter.schema';
 import { VendorWhereInputObjectSchema as VendorWhereInputObjectSchema } from './VendorWhereInput.schema';
 import { ServiceCatalogNullableScalarRelationFilterObjectSchema as ServiceCatalogNullableScalarRelationFilterObjectSchema } from './ServiceCatalogNullableScalarRelationFilter.schema';
-import { ServiceCatalogWhereInputObjectSchema as ServiceCatalogWhereInputObjectSchema } from './ServiceCatalogWhereInput.schema'
+import { ServiceCatalogWhereInputObjectSchema as ServiceCatalogWhereInputObjectSchema } from './ServiceCatalogWhereInput.schema';
+import { TechnicalAssessmentNullableScalarRelationFilterObjectSchema as TechnicalAssessmentNullableScalarRelationFilterObjectSchema } from './TechnicalAssessmentNullableScalarRelationFilter.schema';
+import { TechnicalAssessmentWhereInputObjectSchema as TechnicalAssessmentWhereInputObjectSchema } from './TechnicalAssessmentWhereInput.schema'
 
 const servicerequestwhereinputSchema = z.object({
   AND: z.union([z.lazy(() => ServiceRequestWhereInputObjectSchema), z.lazy(() => ServiceRequestWhereInputObjectSchema).array()]).optional(),
@@ -59,15 +61,17 @@ const servicerequestwhereinputSchema = z.object({
   technicianNameSnap: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
   skuSnapshot: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
   primaryImageUrlSnapshot: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
-  Invoice: z.lazy(() => InvoiceListRelationFilterObjectSchema).optional(),
+  dummy_technical_rel: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
+  invoice: z.lazy(() => InvoiceListRelationFilterObjectSchema).optional(),
   maintenance: z.lazy(() => MaintenanceRecordListRelationFilterObjectSchema).optional(),
   customer: z.union([z.lazy(() => CustomerNullableScalarRelationFilterObjectSchema), z.lazy(() => CustomerWhereInputObjectSchema)]).optional(),
   orderItem: z.union([z.lazy(() => OrderItemNullableScalarRelationFilterObjectSchema), z.lazy(() => OrderItemWhereInputObjectSchema)]).optional(),
   product: z.union([z.lazy(() => ProductNullableScalarRelationFilterObjectSchema), z.lazy(() => ProductWhereInputObjectSchema)]).optional(),
-  User: z.union([z.lazy(() => UserNullableScalarRelationFilterObjectSchema), z.lazy(() => UserWhereInputObjectSchema)]).optional(),
+  user: z.union([z.lazy(() => UserNullableScalarRelationFilterObjectSchema), z.lazy(() => UserWhereInputObjectSchema)]).optional(),
   variant: z.union([z.lazy(() => ProductVariantNullableScalarRelationFilterObjectSchema), z.lazy(() => ProductVariantWhereInputObjectSchema)]).optional(),
-  Vendor: z.union([z.lazy(() => VendorNullableScalarRelationFilterObjectSchema), z.lazy(() => VendorWhereInputObjectSchema)]).optional(),
-  ServiceCatalog: z.union([z.lazy(() => ServiceCatalogNullableScalarRelationFilterObjectSchema), z.lazy(() => ServiceCatalogWhereInputObjectSchema)]).optional()
+  vendor: z.union([z.lazy(() => VendorNullableScalarRelationFilterObjectSchema), z.lazy(() => VendorWhereInputObjectSchema)]).optional(),
+  serviceCatalog: z.union([z.lazy(() => ServiceCatalogNullableScalarRelationFilterObjectSchema), z.lazy(() => ServiceCatalogWhereInputObjectSchema)]).optional(),
+  technicalAssessment: z.union([z.lazy(() => TechnicalAssessmentNullableScalarRelationFilterObjectSchema), z.lazy(() => TechnicalAssessmentWhereInputObjectSchema)]).optional()
 }).strict();
 export const ServiceRequestWhereInputObjectSchema: z.ZodType<Prisma.ServiceRequestWhereInput> = servicerequestwhereinputSchema as unknown as z.ZodType<Prisma.ServiceRequestWhereInput>;
 export const ServiceRequestWhereInputObjectZodSchema = servicerequestwhereinputSchema;

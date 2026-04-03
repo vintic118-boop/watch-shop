@@ -3,7 +3,8 @@ import type { Prisma } from '@prisma/client';
 import { ServiceTypeSchema } from '../enums/ServiceType.schema';
 import { ServiceRequestStatusSchema } from '../enums/ServiceRequestStatus.schema';
 import { ServiceScopeSchema } from '../enums/ServiceScope.schema';
-import { InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema as InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema } from './InvoiceUncheckedCreateNestedManyWithoutServiceReqInput.schema'
+import { InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema as InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema } from './InvoiceUncheckedCreateNestedManyWithoutServiceReqInput.schema';
+import { TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema as TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema } from './TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInput.schema'
 
 const makeSchema = () => z.object({
   id: z.string().optional(),
@@ -33,7 +34,9 @@ const makeSchema = () => z.object({
   technicianNameSnap: z.string().optional().nullable(),
   skuSnapshot: z.string().optional().nullable(),
   primaryImageUrlSnapshot: z.string().optional().nullable(),
-  Invoice: z.lazy(() => InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema).optional()
+  dummy_technical_rel: z.string().optional().nullable(),
+  invoice: z.lazy(() => InvoiceUncheckedCreateNestedManyWithoutServiceReqInputObjectSchema).optional(),
+  technicalAssessment: z.lazy(() => TechnicalAssessmentUncheckedCreateNestedOneWithoutServiceRequestInputObjectSchema).optional()
 }).strict();
 export const ServiceRequestUncheckedCreateWithoutMaintenanceInputObjectSchema: z.ZodType<Prisma.ServiceRequestUncheckedCreateWithoutMaintenanceInput> = makeSchema() as unknown as z.ZodType<Prisma.ServiceRequestUncheckedCreateWithoutMaintenanceInput>;
 export const ServiceRequestUncheckedCreateWithoutMaintenanceInputObjectZodSchema = makeSchema();

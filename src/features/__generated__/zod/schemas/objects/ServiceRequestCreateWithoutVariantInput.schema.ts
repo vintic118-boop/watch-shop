@@ -10,7 +10,8 @@ import { OrderItemCreateNestedOneWithoutServiceRequestInputObjectSchema as Order
 import { ProductCreateNestedOneWithoutServiceRequestInputObjectSchema as ProductCreateNestedOneWithoutServiceRequestInputObjectSchema } from './ProductCreateNestedOneWithoutServiceRequestInput.schema';
 import { UserCreateNestedOneWithoutServiceRequestInputObjectSchema as UserCreateNestedOneWithoutServiceRequestInputObjectSchema } from './UserCreateNestedOneWithoutServiceRequestInput.schema';
 import { VendorCreateNestedOneWithoutServiceRequestInputObjectSchema as VendorCreateNestedOneWithoutServiceRequestInputObjectSchema } from './VendorCreateNestedOneWithoutServiceRequestInput.schema';
-import { ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema as ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema } from './ServiceCatalogCreateNestedOneWithoutServiceRequestInput.schema'
+import { ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema as ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema } from './ServiceCatalogCreateNestedOneWithoutServiceRequestInput.schema';
+import { TechnicalAssessmentCreateNestedOneWithoutServiceRequestInputObjectSchema as TechnicalAssessmentCreateNestedOneWithoutServiceRequestInputObjectSchema } from './TechnicalAssessmentCreateNestedOneWithoutServiceRequestInput.schema'
 
 const makeSchema = () => z.object({
   id: z.string().optional(),
@@ -33,14 +34,16 @@ const makeSchema = () => z.object({
   technicianNameSnap: z.string().optional().nullable(),
   skuSnapshot: z.string().optional().nullable(),
   primaryImageUrlSnapshot: z.string().optional().nullable(),
-  Invoice: z.lazy(() => InvoiceCreateNestedManyWithoutServiceReqInputObjectSchema).optional(),
+  dummy_technical_rel: z.string().optional().nullable(),
+  invoice: z.lazy(() => InvoiceCreateNestedManyWithoutServiceReqInputObjectSchema).optional(),
   maintenance: z.lazy(() => MaintenanceRecordCreateNestedManyWithoutServiceRequestInputObjectSchema).optional(),
   customer: z.lazy(() => CustomerCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
   orderItem: z.lazy(() => OrderItemCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
   product: z.lazy(() => ProductCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
-  User: z.lazy(() => UserCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
-  Vendor: z.lazy(() => VendorCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
-  ServiceCatalog: z.lazy(() => ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema).optional()
+  user: z.lazy(() => UserCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
+  vendor: z.lazy(() => VendorCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
+  serviceCatalog: z.lazy(() => ServiceCatalogCreateNestedOneWithoutServiceRequestInputObjectSchema).optional(),
+  technicalAssessment: z.lazy(() => TechnicalAssessmentCreateNestedOneWithoutServiceRequestInputObjectSchema).optional()
 }).strict();
 export const ServiceRequestCreateWithoutVariantInputObjectSchema: z.ZodType<Prisma.ServiceRequestCreateWithoutVariantInput> = makeSchema() as unknown as z.ZodType<Prisma.ServiceRequestCreateWithoutVariantInput>;
 export const ServiceRequestCreateWithoutVariantInputObjectZodSchema = makeSchema();

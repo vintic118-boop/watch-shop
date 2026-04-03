@@ -11,6 +11,8 @@ import { InvoiceListRelationFilterObjectSchema as InvoiceListRelationFilterObjec
 import { MaintenanceRecordListRelationFilterObjectSchema as MaintenanceRecordListRelationFilterObjectSchema } from './MaintenanceRecordListRelationFilter.schema';
 import { ProductListRelationFilterObjectSchema as ProductListRelationFilterObjectSchema } from './ProductListRelationFilter.schema';
 import { ServiceRequestListRelationFilterObjectSchema as ServiceRequestListRelationFilterObjectSchema } from './ServiceRequestListRelationFilter.schema';
+import { TechnicalAssessmentListRelationFilterObjectSchema as TechnicalAssessmentListRelationFilterObjectSchema } from './TechnicalAssessmentListRelationFilter.schema';
+import { TechnicalIssueListRelationFilterObjectSchema as TechnicalIssueListRelationFilterObjectSchema } from './TechnicalIssueListRelationFilter.schema';
 import { BankNullableScalarRelationFilterObjectSchema as BankNullableScalarRelationFilterObjectSchema } from './BankNullableScalarRelationFilter.schema';
 import { BankWhereInputObjectSchema as BankWhereInputObjectSchema } from './BankWhereInput.schema'
 
@@ -36,6 +38,8 @@ const vendorwhereinputSchema = z.object({
   services: z.lazy(() => MaintenanceRecordListRelationFilterObjectSchema).optional(),
   Product: z.lazy(() => ProductListRelationFilterObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestListRelationFilterObjectSchema).optional(),
+  TechnicalAssessment: z.lazy(() => TechnicalAssessmentListRelationFilterObjectSchema).optional(),
+  TechnicalIssue: z.lazy(() => TechnicalIssueListRelationFilterObjectSchema).optional(),
   Bank: z.union([z.lazy(() => BankNullableScalarRelationFilterObjectSchema), z.lazy(() => BankWhereInputObjectSchema)]).optional()
 }).strict();
 export const VendorWhereInputObjectSchema: z.ZodType<Prisma.VendorWhereInput> = vendorwhereinputSchema as unknown as z.ZodType<Prisma.VendorWhereInput>;

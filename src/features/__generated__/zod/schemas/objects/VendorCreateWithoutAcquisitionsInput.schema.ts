@@ -5,6 +5,8 @@ import { InvoiceCreateNestedManyWithoutVendorInputObjectSchema as InvoiceCreateN
 import { MaintenanceRecordCreateNestedManyWithoutVendorInputObjectSchema as MaintenanceRecordCreateNestedManyWithoutVendorInputObjectSchema } from './MaintenanceRecordCreateNestedManyWithoutVendorInput.schema';
 import { ProductCreateNestedManyWithoutVendorInputObjectSchema as ProductCreateNestedManyWithoutVendorInputObjectSchema } from './ProductCreateNestedManyWithoutVendorInput.schema';
 import { ServiceRequestCreateNestedManyWithoutVendorInputObjectSchema as ServiceRequestCreateNestedManyWithoutVendorInputObjectSchema } from './ServiceRequestCreateNestedManyWithoutVendorInput.schema';
+import { TechnicalAssessmentCreateNestedManyWithoutVendorInputObjectSchema as TechnicalAssessmentCreateNestedManyWithoutVendorInputObjectSchema } from './TechnicalAssessmentCreateNestedManyWithoutVendorInput.schema';
+import { TechnicalIssueCreateNestedManyWithoutVendorInputObjectSchema as TechnicalIssueCreateNestedManyWithoutVendorInputObjectSchema } from './TechnicalIssueCreateNestedManyWithoutVendorInput.schema';
 import { BankCreateNestedOneWithoutVendorInputObjectSchema as BankCreateNestedOneWithoutVendorInputObjectSchema } from './BankCreateNestedOneWithoutVendorInput.schema'
 
 const makeSchema = () => z.object({
@@ -24,6 +26,8 @@ const makeSchema = () => z.object({
   services: z.lazy(() => MaintenanceRecordCreateNestedManyWithoutVendorInputObjectSchema).optional(),
   Product: z.lazy(() => ProductCreateNestedManyWithoutVendorInputObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestCreateNestedManyWithoutVendorInputObjectSchema).optional(),
+  TechnicalAssessment: z.lazy(() => TechnicalAssessmentCreateNestedManyWithoutVendorInputObjectSchema).optional(),
+  TechnicalIssue: z.lazy(() => TechnicalIssueCreateNestedManyWithoutVendorInputObjectSchema).optional(),
   Bank: z.lazy(() => BankCreateNestedOneWithoutVendorInputObjectSchema).optional()
 }).strict();
 export const VendorCreateWithoutAcquisitionsInputObjectSchema: z.ZodType<Prisma.VendorCreateWithoutAcquisitionsInput> = makeSchema() as unknown as z.ZodType<Prisma.VendorCreateWithoutAcquisitionsInput>;

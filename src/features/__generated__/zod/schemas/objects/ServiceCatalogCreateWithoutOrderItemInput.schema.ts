@@ -2,7 +2,8 @@ import * as z from 'zod';
 import type { Prisma } from '@prisma/client';
 import { ServiceDetailSchema } from '../enums/ServiceDetail.schema';
 import { MaintenanceRecordCreateNestedOneWithoutServiceDetailInputObjectSchema as MaintenanceRecordCreateNestedOneWithoutServiceDetailInputObjectSchema } from './MaintenanceRecordCreateNestedOneWithoutServiceDetailInput.schema';
-import { ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema as ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema } from './ServiceRequestCreateNestedManyWithoutServiceCatalogInput.schema'
+import { ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema as ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema } from './ServiceRequestCreateNestedManyWithoutServiceCatalogInput.schema';
+import { TechnicalIssueCreateNestedManyWithoutServiceCatalogInputObjectSchema as TechnicalIssueCreateNestedManyWithoutServiceCatalogInputObjectSchema } from './TechnicalIssueCreateNestedManyWithoutServiceCatalogInput.schema'
 
 const makeSchema = () => z.object({
   id: z.string().optional(),
@@ -22,7 +23,8 @@ const makeSchema = () => z.object({
   categoryKey: z.string().optional().nullable(),
   sortOrder: z.number().int().optional(),
   maintenanceRecord: z.lazy(() => MaintenanceRecordCreateNestedOneWithoutServiceDetailInputObjectSchema).optional(),
-  ServiceRequest: z.lazy(() => ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema).optional()
+  ServiceRequest: z.lazy(() => ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema).optional(),
+  TechnicalIssue: z.lazy(() => TechnicalIssueCreateNestedManyWithoutServiceCatalogInputObjectSchema).optional()
 }).strict();
 export const ServiceCatalogCreateWithoutOrderItemInputObjectSchema: z.ZodType<Prisma.ServiceCatalogCreateWithoutOrderItemInput> = makeSchema() as unknown as z.ZodType<Prisma.ServiceCatalogCreateWithoutOrderItemInput>;
 export const ServiceCatalogCreateWithoutOrderItemInputObjectZodSchema = makeSchema();

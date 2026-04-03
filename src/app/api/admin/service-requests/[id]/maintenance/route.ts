@@ -11,6 +11,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
             sr: panel?.sr ?? null,
             items: panel?.logs ?? [],
             logs: panel?.logs ?? [],
+            serviceCatalogs: panel?.serviceCatalogs ?? [],
         });
     } catch (e: any) {
         return NextResponse.json({ error: e?.message ?? "Internal error" }, { status: 500 });
@@ -30,6 +31,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             serviceRequestId,
             vendorId: body.vendorId ?? null,
             notes: body.notes ?? null,
+            diagnosis: body.diagnosis ?? null,
+            workSummary: body.workSummary ?? null,
+            processingMode: body.processingMode ?? null,
+            serviceCatalogId: body.serviceCatalogId ?? null,
+            imageFileKey: body.imageFileKey ?? null,
             servicedAt: body.servicedAt ? new Date(body.servicedAt) : null,
             totalCost: body.totalCost ?? null,
             currency: body.currency ?? null,
@@ -37,8 +43,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             paymentStatus: body.paymentStatus ?? null,
             paymentType: body.paymentType ?? null,
             paymentPurpose: body.paymentPurpose ?? null,
-            serviceCatalogId: body.serviceCatalogId ?? null,
-            source: body.source ?? null,
         });
 
         return NextResponse.json({ item: created });

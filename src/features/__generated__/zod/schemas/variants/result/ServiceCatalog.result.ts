@@ -22,7 +22,8 @@ export const ServiceCatalogResultSchema = z.object({
     sortOrder: z.number().int(),
     OrderItem: z.array(z.unknown()),
     maintenanceRecord: z.unknown().nullable(),
-    ServiceRequest: z.array(z.unknown())
+    ServiceRequest: z.array(z.unknown()),
+    TechnicalIssue: z.array(z.unknown())
 }).strict();
 
 export type ServiceCatalogResultType = z.infer<typeof ServiceCatalogResultSchema>;

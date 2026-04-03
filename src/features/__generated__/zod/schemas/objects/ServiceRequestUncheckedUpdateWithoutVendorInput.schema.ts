@@ -12,7 +12,8 @@ import { DateTimeFieldUpdateOperationsInputObjectSchema as DateTimeFieldUpdateOp
 import { ServiceScopeSchema } from '../enums/ServiceScope.schema';
 import { NullableEnumServiceScopeFieldUpdateOperationsInputObjectSchema as NullableEnumServiceScopeFieldUpdateOperationsInputObjectSchema } from './NullableEnumServiceScopeFieldUpdateOperationsInput.schema';
 import { InvoiceUncheckedUpdateManyWithoutServiceReqNestedInputObjectSchema as InvoiceUncheckedUpdateManyWithoutServiceReqNestedInputObjectSchema } from './InvoiceUncheckedUpdateManyWithoutServiceReqNestedInput.schema';
-import { MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema as MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema } from './MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInput.schema'
+import { MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema as MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema } from './MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInput.schema';
+import { TechnicalAssessmentUncheckedUpdateOneWithoutServiceRequestNestedInputObjectSchema as TechnicalAssessmentUncheckedUpdateOneWithoutServiceRequestNestedInputObjectSchema } from './TechnicalAssessmentUncheckedUpdateOneWithoutServiceRequestNestedInput.schema'
 
 const makeSchema = () => z.object({
   id: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputObjectSchema)]).optional(),
@@ -41,8 +42,10 @@ const makeSchema = () => z.object({
   technicianNameSnap: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   skuSnapshot: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   primaryImageUrlSnapshot: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
-  Invoice: z.lazy(() => InvoiceUncheckedUpdateManyWithoutServiceReqNestedInputObjectSchema).optional(),
-  maintenance: z.lazy(() => MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema).optional()
+  dummy_technical_rel: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
+  invoice: z.lazy(() => InvoiceUncheckedUpdateManyWithoutServiceReqNestedInputObjectSchema).optional(),
+  maintenance: z.lazy(() => MaintenanceRecordUncheckedUpdateManyWithoutServiceRequestNestedInputObjectSchema).optional(),
+  technicalAssessment: z.lazy(() => TechnicalAssessmentUncheckedUpdateOneWithoutServiceRequestNestedInputObjectSchema).optional()
 }).strict();
 export const ServiceRequestUncheckedUpdateWithoutVendorInputObjectSchema: z.ZodType<Prisma.ServiceRequestUncheckedUpdateWithoutVendorInput> = makeSchema() as unknown as z.ZodType<Prisma.ServiceRequestUncheckedUpdateWithoutVendorInput>;
 export const ServiceRequestUncheckedUpdateWithoutVendorInputObjectZodSchema = makeSchema();

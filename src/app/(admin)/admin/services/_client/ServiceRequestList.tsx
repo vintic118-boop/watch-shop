@@ -4,10 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import GenericActionMenu from "../../__components/GenericActionMenu";
 import BulkAssignTechnicianModal from "./BulkAssignTechnicianModal";
-import MaintenanceDrawer from "./MaintenanceDrawer";
 import MaintenanceLogModal from "./MaintenaceLogModel";
 import DotLabel from "../../__components/DotLabel";
-
+import TechnicalAssessmentModal from "./TechnicalAssessmentModal";
 import StatusBadge from "@/components/badges/StatusBadge";
 import SegmentTabs from "@/components/tabs/SegmenTabs";
 
@@ -22,12 +21,19 @@ type ServiceReqItem = {
     orderRefNo: string | null;
     serviceName: string | null;
     productTitle: string | null;
+    primaryImageUrl: string | null;
+    skuSnapshot: string | null;
     vendorName: string | null;
     technicianName: string | null;
     maintenanceCount: number;
-    maintenanceCostTotal?: number | null;
-    primaryImageUrlSnapshot?: string | null;
-    skuSnapshot?: string | null;
+    product?: {
+        id: string;
+        title?: string | null;
+        primaryImageUrl?: string | null;
+        watchSpec?: {
+            movement?: string | null;
+        } | null;
+    } | null;
 };
 
 type ViewKey = "all" | "draft" | "in_progress" | "done" | "canceled";
@@ -49,17 +55,6 @@ type PageProps = {
     rawSearchParams: Record<string, string | string[] | undefined>;
     counts?: Partial<Counts>;
 };
-
-function resolveServiceImage(src?: string | null) {
-    if (!src) return null;
-    if (/^https?:\/\//i.test(src) || src.startsWith("data:")) return src;
-    return `/api/media/sign?key=${encodeURIComponent(src)}`;
-}
-
-function fmtMoney(value?: number | null) {
-    if (value == null) return "-";
-    return `${new Intl.NumberFormat("vi-VN").format(Number(value))} VND`;
-}
 
 function fmtDT(s?: string | null) {
     if (!s) return "-";
@@ -110,10 +105,9 @@ export default function ServiceRequestListClient(props: PageProps) {
 
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [showBulkBar, setShowBulkBar] = useState(false);
-
+    const [technicalAssessmentRequestId, setTechnicalAssessmentRequestId] =
+        useState<string | null>(null);
     const [openBulkAssignTechnician, setOpenBulkAssignTechnician] = useState(false);
-    const [openMaint, setOpenMaint] = useState(false);
-    const [maintSrId, setMaintSrId] = useState<string | null>(null);
     const [openLogs, setOpenLogs] = useState(false);
     const [logSrId, setLogSrId] = useState<string>("");
     const [logTitle, setLogTitle] = useState<string>("");
@@ -127,6 +121,24 @@ export default function ServiceRequestListClient(props: PageProps) {
         if (!res.ok) throw new Error(await res.text());
         router.refresh();
     };
+
+    const selectedItem = useMemo(
+        () => items.find((item) => item.id === technicalAssessmentRequestId) ?? null,
+        [items, technicalAssessmentRequestId]
+    );
+
+    const productImage =
+        selectedItem?.primaryImageUrl ??
+        selectedItem?.product?.primaryImageUrl ??
+        null;
+
+    const productTitle =
+        selectedItem?.productTitle ??
+        selectedItem?.product?.title ??
+        null;
+
+    const productSku = selectedItem?.skuSnapshot ?? null;
+    const movementSpecLabel = selectedItem?.product?.watchSpec?.movement ?? null;
 
     useEffect(() => {
         setSelectedIds([]);
@@ -309,9 +321,9 @@ export default function ServiceRequestListClient(props: PageProps) {
                                     />
                                 </th>
                                 <th className="px-3 py-3">RefNo</th>
+                                <th className="px-3 py-3">Ảnh</th>
                                 <th className="px-3 py-3">Service</th>
                                 <th className="px-3 py-3">Nguồn / xử lý</th>
-                                <th className="px-3 py-3 text-right">Chi phí</th>
                                 <th className="px-3 py-3">Status</th>
                                 <th className="px-3 py-3">Ngày tạo</th>
                                 <th className="px-3 py-3">Link</th>
@@ -351,34 +363,33 @@ export default function ServiceRequestListClient(props: PageProps) {
                                             </td>
 
                                             <td className="align-top px-3 py-4">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="h-14 w-14 overflow-hidden rounded border bg-gray-50">
-                                                        {resolveServiceImage(row.primaryImageUrlSnapshot) ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={resolveServiceImage(row.primaryImageUrlSnapshot) || undefined} alt={row.productTitle || row.serviceName || "product"} className="h-full w-full object-cover" />
-                                                        ) : (
-                                                            <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">No image</div>
-                                                        )}
+                                                {row.primaryImageUrl ? (
+                                                    <img
+                                                        src={`/api/media/sign?key=${encodeURIComponent(row.primaryImageUrl)}`}
+                                                        alt={row.productTitle || "service-product"}
+                                                        className="h-14 w-14 rounded-lg border object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-14 w-14 items-center justify-center rounded-lg border text-xs text-gray-400">
+                                                        No image
                                                     </div>
-                                                    <div>
-                                                        <div className="font-medium">{row.serviceName || "-"}</div>
-                                                        <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-400">product · {row.productTitle || "-"}</div>
-                                                        <div className="mt-1 text-xs text-gray-500">SKU: {row.skuSnapshot || "-"}</div>
-                                                        <div className="mt-1 text-xs text-gray-500">Note: {row.customerItemNote || "-"}</div>
-                                                    </div>
-                                                </div>
+                                                )}
+                                            </td>
+
+                                            <td className="align-top px-3 py-4">
+                                                <div className="font-medium">{row.serviceName || "-"}</div>
+                                                <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-400">product · {row.productTitle || "-"}</div>
+                                                <div className="mt-1 text-xs text-gray-500">SKU: {row.skuSnapshot || "-"}</div>
+                                                <div className="mt-1 text-xs text-gray-500">Note: {row.customerItemNote || "-"}</div>
                                             </td>
 
                                             <td className="align-top px-3 py-4">
                                                 <DotLabel label={formatScope(row.scope)} tone={scopeTone(row.scope)} />
                                                 <div className="mt-2 text-sm">
                                                     <div>Thợ: <span className="font-medium">{row.technicianName || "Chưa gán"}</span></div>
+                                                    <div className="mt-1">Vendor: <span className="font-medium">{row.vendorName || "-"}</span></div>
                                                 </div>
                                                 <div className="mt-1 text-xs text-gray-500">Maintenance: {row.maintenanceCount ?? 0}</div>
-                                            </td>
-
-                                            <td className="align-middle px-3 py-4 text-right">
-                                                <div className="font-medium">{fmtMoney((row as any).maintenanceCostTotal ?? null)}</div>
                                             </td>
 
                                             <td className="align-middle px-3 py-4">
@@ -404,12 +415,6 @@ export default function ServiceRequestListClient(props: PageProps) {
                                             <td className="px-3 py-4 text-right align-middle">
                                                 <GenericActionMenu
                                                     id={row.id}
-                                                    maintenance={{
-                                                        onOpen: () => {
-                                                            setMaintSrId(row.id);
-                                                            setOpenMaint(true);
-                                                        },
-                                                    }}
                                                     actions={[
                                                         {
                                                             label: "Xem logs",
@@ -432,6 +437,10 @@ export default function ServiceRequestListClient(props: PageProps) {
                                                             onClick: async () => {
                                                                 await navigator.clipboard?.writeText(row.id);
                                                             },
+                                                        },
+                                                        {
+                                                            label: "Đánh giá kỹ thuật",
+                                                            onClick: () => setTechnicalAssessmentRequestId(row.id),
                                                         },
                                                     ]}
                                                 />
@@ -481,20 +490,26 @@ export default function ServiceRequestListClient(props: PageProps) {
                 }}
             />
 
-            {maintSrId ? (
-                <MaintenanceDrawer
-                    open={openMaint}
-                    onClose={() => setOpenMaint(false)}
-                    serviceRequestId={maintSrId}
-                    onChanged={() => router.refresh()}
-                />
-            ) : null}
-
             <MaintenanceLogModal
                 open={openLogs}
                 onClose={() => setOpenLogs(false)}
                 serviceRequestId={logSrId}
                 title={logTitle}
+            />
+
+            <TechnicalAssessmentModal
+                key={technicalAssessmentRequestId || "technical-assessment-empty"}
+                open={!!technicalAssessmentRequestId}
+                serviceRequestId={technicalAssessmentRequestId}
+                onClose={() => setTechnicalAssessmentRequestId(null)}
+                onSaved={async () => {
+                    setTechnicalAssessmentRequestId(null);
+                    router.refresh();
+                }}
+                productName={productTitle ?? undefined}
+                productSku={productSku ?? undefined}
+                productImage={productImage ?? undefined}
+                movementSpecLabel={movementSpecLabel ?? undefined}
             />
         </div>
     );

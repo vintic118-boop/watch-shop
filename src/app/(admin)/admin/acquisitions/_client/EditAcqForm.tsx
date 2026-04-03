@@ -13,9 +13,9 @@ import {
 
 type WatchFlags = {
     hasStrap: boolean;
-    isServiced: boolean;
+    needService: boolean;
     hasClasp: boolean;
-    needsService: boolean;
+
 };
 
 type StrapSpec = {
@@ -74,9 +74,8 @@ function uid() {
 function defaultWatchFlags(): WatchFlags {
     return {
         hasStrap: true,
-        isServiced: false,
+        needService: false,
         hasClasp: false,
-        needsService: true,
     };
 }
 
@@ -94,9 +93,8 @@ function defaultStrapSpec(): StrapSpec {
 function normalizeWatchFlags(flags?: Partial<WatchFlags> | null): WatchFlags {
     return {
         hasStrap: !!flags?.hasStrap,
-        isServiced: !!flags?.isServiced,
+        needService: !!flags?.needService,
         hasClasp: !!flags?.hasClasp,
-        needsService: flags?.needsService == null ? true : !!flags?.needsService,
     };
 }
 
@@ -588,11 +586,11 @@ export default function EditAcqForm({
                                         <div className="text-sm font-medium text-slate-700">Trạng thái tiếp nhận đồng hồ</div>
                                         <div className="flex flex-wrap gap-2">
                                             <FlagCheckbox
-                                                checked={!!line.watchFlags?.needsService}
+                                                checked={!!line.watchFlags?.needService}
                                                 label="Service"
-                                                disabled={readOnly}
-                                                onChange={(v) => setWatchFlag(line.id, "needsService", v)}
+                                                onChange={(v) => setWatchFlag(line.id, "needService", v)}
                                             />
+
                                         </div>
                                     </div>
                                 ) : null}
@@ -694,7 +692,27 @@ export default function EditAcqForm({
             {okMsg ? <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{okMsg}</div> : null}
 
             {!readOnly ? (
-                <div className="flex justify-end">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setLines((prev) => [...prev, newLine(ProductType.WATCH)])}
+                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+                        >
+                            + Thêm đồng hồ
+                        </button>
+
+                        {productTypes.includes(ProductType.WATCH_STRAP) ? (
+                            <button
+                                type="button"
+                                onClick={() => setLines((prev) => [...prev, newLine(ProductType.WATCH_STRAP)])}
+                                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+                            >
+                                + Thêm dây
+                            </button>
+                        ) : null}
+                    </div>
+
                     <button
                         type="submit"
                         disabled={saving}

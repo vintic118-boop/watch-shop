@@ -19,7 +19,8 @@ export const ServiceCatalogAggregateResultSchema = z.object({  _count: z.object(
     sortOrder: z.number(),
     OrderItem: z.number(),
     maintenanceRecord: z.number(),
-    ServiceRequest: z.number()
+    ServiceRequest: z.number(),
+    TechnicalIssue: z.number()
   }).optional(),
   _sum: z.object({
     defaultPrice: z.number().nullable(),
