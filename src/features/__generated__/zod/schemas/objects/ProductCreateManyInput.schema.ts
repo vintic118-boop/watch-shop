@@ -25,7 +25,10 @@ const makeSchema = () => z.object({
   tag: TagSchema.optional(),
   status: ProductStatusSchema.optional(),
   categoryId: z.string().optional().nullable(),
-  contentStatus: ContentStatusSchema.optional().nullable()
+  contentStatus: ContentStatusSchema.optional(),
+  postContent: z.string().optional().nullable(),
+  aiPromptUsed: z.string().optional().nullable(),
+  aiGeneratedAt: z.coerce.date().optional().nullable()
 }).strict();
 export const ProductCreateManyInputObjectSchema: z.ZodType<Prisma.ProductCreateManyInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductCreateManyInput>;
 export const ProductCreateManyInputObjectZodSchema = makeSchema();

@@ -18,6 +18,12 @@ const makeSchema = () => z.object({
   updatedAt: SortOrderSchema.optional(),
   maintenanceRecordId: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
   detail: SortOrderSchema.optional(),
+  vendorPrice: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
+  customerPrice: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
+  internalCost: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
+  note: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
+  categoryKey: z.union([SortOrderSchema, z.lazy(() => SortOrderInputObjectSchema)]).optional(),
+  sortOrder: SortOrderSchema.optional(),
   OrderItem: z.lazy(() => OrderItemOrderByRelationAggregateInputObjectSchema).optional(),
   maintenanceRecord: z.lazy(() => MaintenanceRecordOrderByWithRelationInputObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestOrderByRelationAggregateInputObjectSchema).optional()

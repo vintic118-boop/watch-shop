@@ -15,6 +15,12 @@ const makeSchema = () => z.object({
   isActive: z.boolean().optional(),
   createdAt: z.coerce.date().optional(),
   detail: ServiceDetailSchema,
+  vendorPrice: z.number().optional().nullable(),
+  customerPrice: z.number().optional().nullable(),
+  internalCost: z.number().optional().nullable(),
+  note: z.string().optional().nullable(),
+  categoryKey: z.string().optional().nullable(),
+  sortOrder: z.number().int().optional(),
   OrderItem: z.lazy(() => OrderItemCreateNestedManyWithoutServiceCatalogInputObjectSchema),
   maintenanceRecord: z.lazy(() => MaintenanceRecordCreateNestedOneWithoutServiceDetailInputObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestCreateNestedManyWithoutServiceCatalogInputObjectSchema)
