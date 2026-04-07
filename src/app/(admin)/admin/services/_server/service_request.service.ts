@@ -462,3 +462,65 @@ export async function getTechnicianOptions() {
         email: u.email,
     }));
 }
+
+export async function getServiceRequestDetailRepo(serviceRequestId: string) {
+    return prisma.serviceRequest.findUnique({
+        where: { id: serviceRequestId },
+        select: {
+            id: true,
+            refNo: true,
+            status: true,
+            scope: true,
+            notes: true,
+            createdAt: true,
+            updatedAt: true,
+
+            productId: true,
+            variantId: true,
+            skuSnapshot: true,
+            primaryImageUrlSnapshot: true,
+            brandSnapshot: true,
+            modelSnapshot: true,
+            refSnapshot: true,
+            serialSnapshot: true,
+
+            vendorId: true,
+            vendorNameSnap: true,
+            technicianId: true,
+            technicianNameSnap: true,
+
+            product: {
+                select: {
+                    id: true,
+                    title: true,
+                    primaryImageUrl: true,
+                    watchSpec: {
+                        select: {
+                            movement: true,
+                            model: true,
+                            ref: true,
+                        },
+                    },
+                },
+            },
+
+            technicalAssessment: {
+                include: {
+                    TechnicalIssue: {
+                        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+                    },
+                },
+            },
+
+            maintenance: {
+                orderBy: [{ createdAt: "desc" }],
+                take: 30,
+                include: {
+                    ServiceCatalog: {
+                        select: { id: true, code: true, name: true },
+                    },
+                },
+            },
+        },
+    });
+}

@@ -13,7 +13,7 @@ import type {
     ProductListSort,
     ProductCatalogKey,
 } from "../helpers/search-params";
-
+import { genUniqueProductSku } from "./helper";
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
@@ -35,7 +35,7 @@ type AdminProductListRepoInput = ProductListInput & {
 };
 
 const STRAP_ATTACHMENT_PREFIX = "__STRAP_LINK__:";
-
+type ReadBatchFactory<T = unknown> = () => Promise<T>;
 type StoredStrapAttachment = {
     productId: string;
     variantId: string;
@@ -52,6 +52,56 @@ type StoredStrapAttachment = {
     } | null;
     baseName?: string | null;
 };
+
+export const productForBulkPostArgs = Prisma.validator<Prisma.ProductDefaultArgs>()({
+    select: {
+        id: true,
+        title: true,
+        status: true,
+        contentStatus: true,
+        type: true,
+        brandId: true,
+        categoryId: true,
+        primaryImageUrl: true,
+        image: {
+            where: { role: { in: [ImageRole.PRIMARY, ImageRole.GALLERY] } },
+            select: { id: true },
+        },
+        variants: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+                sku: true,
+                price: true,
+                stockQty: true,
+                availabilityStatus: true,
+            },
+        },
+        watchSpec: {
+            select: {
+                ref: true,
+                model: true,
+                year: true,
+                caseType: true,
+                movement: true,
+                caseMaterial: true,
+                goldKarat: true,
+                goldColor: true,
+                length: true,
+                width: true,
+                thickness: true,
+                dialColor: true,
+                strap: true,
+                glass: true,
+                boxIncluded: true,
+                bookletIncluded: true,
+                cardIncluded: true,
+            },
+        },
+    },
+});
+
+export type ProductForBulkPost = Prisma.ProductGetPayload<typeof productForBulkPostArgs>;
 
 function parseStoredStrapAttachment(raw: unknown): StoredStrapAttachment | null {
     if (typeof raw !== "string" || !raw.startsWith(STRAP_ATTACHMENT_PREFIX)) return null;
@@ -76,6 +126,63 @@ function endOfDay(date: Date) {
     const d = new Date(date);
     d.setHours(23, 59, 59, 999);
     return d;
+}
+
+
+function toPlainText(value: unknown): string | null {
+    if (value == null) return null;
+    const s = String(value).trim();
+    return s ? s : null;
+}
+
+function toNumberOrNull(value: unknown): number | null {
+    if (value == null || value === "") return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+}
+
+function buildSizeSnapshot(watchSpec?: {
+    caseSize?: string | null;
+    length?: unknown;
+    width?: unknown;
+    thickness?: unknown;
+} | null) {
+    if (!watchSpec) return null;
+
+    const caseSize = toPlainText(watchSpec.caseSize);
+    if (caseSize) return caseSize;
+
+    const length = toNumberOrNull(watchSpec.length);
+    const width = toNumberOrNull(watchSpec.width);
+    const thickness = toNumberOrNull(watchSpec.thickness);
+
+    const parts: string[] = [];
+    if (length != null) parts.push(`Dài ${length}mm`);
+    if (width != null) parts.push(`Ngang ${width}mm`);
+    if (thickness != null) parts.push(`Dày ${thickness}mm`);
+
+    return parts.length ? parts.join(" · ") : null;
+}
+
+function buildMovementSnapshot(movement?: unknown, caliber?: unknown) {
+    const mv = toPlainText(movement);
+    const cal = toPlainText(caliber);
+
+    if (mv && cal) return `${mv} · Cal.${cal}`;
+    return mv ?? cal ?? null;
+}
+
+function buildStrapClaspSnapshot(input?: {
+    strap?: unknown;
+    hasClasp?: boolean | null;
+} | null) {
+    if (!input) return null;
+
+    const strap = toPlainText(input.strap);
+    const clasp = input.hasClasp == null ? null : input.hasClasp ? "Có khóa" : "Không khóa";
+
+    if (strap && clasp) return `${strap} · ${clasp}`;
+    return strap ?? clasp ?? null;
 }
 
 function buildOrderBy(sort?: ProductListSort): Prisma.ProductOrderByWithRelationInput {
@@ -208,7 +315,7 @@ function buildWhereForView(
     }
 }
 
-type ReadBatchFactory<T = unknown> = () => Promise<T>;
+
 
 async function runReadBatch<T extends unknown[]>(
     factories: { [K in keyof T]: ReadBatchFactory<T[K]> }
@@ -646,10 +753,12 @@ export async function createProductDraft(
     vendorId: string | null
 ) {
     const db = dbOrTx(tx);
+    const sku = await genUniqueProductSku(db as any, type);
 
     return db.product.create({
         data: {
             title,
+            sku,
             vendorId: vendorId ?? undefined,
             status: ProductStatus.AVAILABLE,
             contentStatus: ContentStatus.DRAFT,
@@ -658,22 +767,27 @@ export async function createProductDraft(
                 create: [
                     {
                         stockQty: quantity,
+                        sku, // mirror tạm thời để không vỡ code cũ
                     },
                 ],
             },
         },
-        select: { id: true, slug: true },
+        select: { id: true, slug: true, sku: true },
     });
 }
-
 export async function searchProductsRepo(tx: DB, q: string) {
     const db = dbOrTx(tx);
 
-    const product = await db.product.findMany({
+    const products = await db.product.findMany({
         where: {
-            OR: [{ title: { contains: q, mode: "insensitive" } }],
+            OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { sku: { contains: q, mode: "insensitive" } },
+            ],
             status: ProductStatus.AVAILABLE,
-            contentStatus: ContentStatus.DRAFT,
+            contentStatus: {
+                in: [ContentStatus.DRAFT, ContentStatus.PUBLISHED],
+            },
             variants: {
                 some: {
                     availabilityStatus: AvailabilityStatus.ACTIVE,
@@ -682,6 +796,7 @@ export async function searchProductsRepo(tx: DB, q: string) {
         },
         select: {
             id: true,
+            sku: true,
             title: true,
             type: true,
             primaryImageUrl: true,
@@ -693,6 +808,7 @@ export async function searchProductsRepo(tx: DB, q: string) {
                     id: true,
                     price: true,
                     availabilityStatus: true,
+                    sku: true,
                 },
                 orderBy: {
                     updatedAt: "desc",
@@ -706,19 +822,22 @@ export async function searchProductsRepo(tx: DB, q: string) {
             },
         },
         take: 20,
-        orderBy: { updatedAt: "desc" },
+        orderBy: {
+            updatedAt: "desc",
+        },
     });
 
-    return product.map((p) => ({
+    return products.map((p) => ({
         id: p.id,
+        sku: p.sku ?? p.variants?.[0]?.sku ?? null,
         title: p.title,
         type: p.type,
-        primaryImageUrl: p.primaryImageUrl,
+        primaryImageUrl: p.primaryImageUrl ?? null,
         price: p.variants[0] ? Number(p.variants[0].price) : 0,
+        variantId: p.variants[0]?.id ?? null,
         vendorName: p.vendor?.name ?? null,
     }));
 }
-
 export async function updateProduct(
     tx: DB,
     id: string,
@@ -752,8 +871,16 @@ export async function updatePrimaryVariantPricing(
     tx: DB,
     productId: string,
     patch: {
+        price?: number | null;
         minPrice?: number | null;
+        listPrice?: number | null;
+        discountType?: Prisma.ProductVariantUpdateInput["discountType"] | null;
+        discountValue?: number | null;
         salePrice?: number | null;
+        saleStartsAt?: Date | null;
+        saleEndsAt?: Date | null;
+        costPrice?: number | null;
+        availabilityStatus?: AvailabilityStatus;
     }
 ) {
     const db = dbOrTx(tx);
@@ -771,8 +898,21 @@ export async function updatePrimaryVariantPricing(
     return db.productVariant.update({
         where: { id: variant.id },
         data: {
-            ...(patch.minPrice !== undefined ? { price: patch.minPrice } : {}),
+            ...(patch.price !== undefined
+                ? { price: patch.price }
+                : patch.minPrice !== undefined
+                    ? { price: patch.minPrice }
+                    : {}),
+            ...(patch.listPrice !== undefined ? { listPrice: patch.listPrice } : {}),
+            ...(patch.discountType !== undefined ? { discountType: patch.discountType as any } : {}),
+            ...(patch.discountValue !== undefined ? { discountValue: patch.discountValue } : {}),
             ...(patch.salePrice !== undefined ? { salePrice: patch.salePrice } : {}),
+            ...(patch.saleStartsAt !== undefined ? { saleStartsAt: patch.saleStartsAt } : {}),
+            ...(patch.saleEndsAt !== undefined ? { saleEndsAt: patch.saleEndsAt } : {}),
+            ...(patch.costPrice !== undefined ? { costPrice: patch.costPrice } : {}),
+            ...(patch.availabilityStatus !== undefined
+                ? { availabilityStatus: patch.availabilityStatus }
+                : {}),
             updatedAt: new Date(),
         },
     });
@@ -1019,56 +1159,6 @@ export async function markProductsShippedOrDelivered(
         },
     });
 }
-
-export const productForBulkPostArgs = Prisma.validator<Prisma.ProductDefaultArgs>()({
-    select: {
-        id: true,
-        title: true,
-        status: true,
-        contentStatus: true,
-        type: true,
-        brandId: true,
-        categoryId: true,
-        primaryImageUrl: true,
-        image: {
-            where: { role: { in: [ImageRole.PRIMARY, ImageRole.GALLERY] } },
-            select: { id: true },
-        },
-        variants: {
-            orderBy: { updatedAt: "desc" },
-            take: 1,
-            select: {
-                sku: true,
-                price: true,
-                stockQty: true,
-                availabilityStatus: true,
-            },
-        },
-        watchSpec: {
-            select: {
-                ref: true,
-                model: true,
-                year: true,
-                caseType: true,
-                movement: true,
-                caseMaterial: true,
-                goldKarat: true,
-                goldColor: true,
-                length: true,
-                width: true,
-                thickness: true,
-                dialColor: true,
-                strap: true,
-                glass: true,
-                boxIncluded: true,
-                bookletIncluded: true,
-                cardIncluded: true,
-            },
-        },
-    },
-});
-
-export type ProductForBulkPost = Prisma.ProductGetPayload<typeof productForBulkPostArgs>;
 
 export async function getProductsForBulkPost(tx: DB, ids: string[]) {
     const db = dbOrTx(tx);
@@ -1358,6 +1448,323 @@ export async function upsertWatchSpecForAdmin(
     });
 }
 
+
+export async function getAdminProductDetail(tx: DB, productId: string) {
+    const db = dbOrTx(tx);
+
+    return db.product.findUnique({
+        where: { id: productId },
+        include: {
+            brand: true,
+            vendor: true,
+            ProductCategory: true,
+            content: true,
+            watchSpec: {
+                include: {
+                    complication: true,
+                },
+            },
+            image: {
+                where: { role: { in: [ImageRole.PRIMARY, ImageRole.GALLERY] } },
+                orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            },
+            variants: {
+                orderBy: [{ updatedAt: "desc" }, { createdAt: "asc" }],
+                include: {
+                    strapSpec: true,
+                    acquisitionItem: {
+                        orderBy: { createdAt: "desc" },
+                        take: 1,
+                        select: {
+                            unitCost: true,
+                            acquisition: {
+                                select: {
+                                    id: true,
+                                    refNo: true,
+                                    acquiredAt: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
+
+export async function getProductTradeHistory(tx: DB, productId: string) {
+    const db = dbOrTx(tx);
+
+    const [acquisitionRows, orderRows] = await Promise.all([
+        db.acquisitionItem.findMany({
+            where: { productId },
+            orderBy: [
+                { acquisition: { acquiredAt: "desc" } },
+                { createdAt: "desc" },
+            ],
+            select: {
+                id: true,
+                quantity: true,
+                unitCost: true,
+                currency: true,
+                status: true,
+                productTitle: true,
+                createdAt: true,
+                returnedAt: true,
+                acquisition: {
+                    select: {
+                        id: true,
+                        refNo: true,
+                        type: true,
+                        accquisitionStt: true,
+                        acquiredAt: true,
+                        vendor: {
+                            select: { id: true, name: true },
+                        },
+                        customer: {
+                            select: { id: true, name: true },
+                        },
+                    },
+                },
+            },
+        }),
+
+        db.orderItem.findMany({
+            where: { productId },
+            orderBy: [
+                { order: { createdAt: "desc" } },
+                { createdAt: "desc" },
+            ],
+            select: {
+                id: true,
+                title: true,
+                quantity: true,
+                unitPriceAgreed: true,
+                subtotal: true,
+                kind: true,
+                productType: true,
+                createdAt: true,
+                order: {
+                    select: {
+                        id: true,
+                        refNo: true,
+                        status: true,
+                        paymentStatus: true,
+                        source: true,
+                        customerName: true,
+                        createdAt: true,
+                    },
+                },
+            },
+        }),
+    ]);
+
+    return {
+        acquisitions: acquisitionRows.map((row: any) => ({
+            id: row.id,
+            quantity: row.quantity ?? 0,
+            unitCost: row.unitCost != null ? Number(row.unitCost) : null,
+            currency: row.currency ?? "VND",
+            status: row.status ?? null,
+            productTitle: row.productTitle ?? null,
+            createdAt: row.createdAt?.toISOString?.() ?? null,
+            returnedAt: row.returnedAt?.toISOString?.() ?? null,
+            acquisition: row.acquisition
+                ? {
+                    id: row.acquisition.id,
+                    refNo: row.acquisition.refNo ?? null,
+                    type: row.acquisition.type ?? null,
+                    accquisitionStt: row.acquisition.accquisitionStt ?? null,
+                    acquiredAt: row.acquisition.acquiredAt?.toISOString?.() ?? null,
+                    vendor: row.acquisition.vendor
+                        ? {
+                            id: row.acquisition.vendor.id,
+                            name: row.acquisition.vendor.name,
+                        }
+                        : null,
+                    customer: row.acquisition.customer
+                        ? {
+                            id: row.acquisition.customer.id,
+                            name: row.acquisition.customer.name,
+                        }
+                        : null,
+                }
+                : null,
+        })),
+
+        orders: orderRows.map((row: any) => ({
+            id: row.id,
+            title: row.title,
+            quantity: row.quantity ?? 0,
+            unitPriceAgreed: row.unitPriceAgreed != null ? Number(row.unitPriceAgreed) : null,
+            subtotal: row.subtotal != null ? Number(row.subtotal) : null,
+            kind: row.kind ?? null,
+            productType: row.productType ?? null,
+            createdAt: row.createdAt?.toISOString?.() ?? null,
+            order: row.order
+                ? {
+                    id: row.order.id,
+                    refNo: row.order.refNo ?? null,
+                    status: row.order.status ?? null,
+                    paymentStatus: row.order.paymentStatus ?? null,
+                    source: row.order.source ?? null,
+                    customerName: row.order.customerName ?? null,
+                    createdAt: row.order.createdAt?.toISOString?.() ?? null,
+                }
+                : null,
+        })),
+    };
+}
+
+export async function syncProductContentSnapshot(tx: DB, productId: string) {
+    const db = dbOrTx(tx);
+
+    const product = await db.product.findUnique({
+        where: { id: productId },
+        select: {
+            id: true,
+            title: true,
+            brand: {
+                select: {
+                    name: true,
+                },
+            },
+            watchSpec: {
+                select: {
+                    ref: true,
+                    caseSize: true,
+                    length: true,
+                    width: true,
+                    thickness: true,
+                    movement: true,
+                    caliber: true,
+                    glass: true,
+                    strap: true,
+                    hasClasp: true,
+                    model: true,
+                    year: true,
+                },
+            },
+        },
+    });
+
+    if (!product) {
+        throw new Error("Không tìm thấy sản phẩm.");
+    }
+
+    const sizeSnapshot = buildSizeSnapshot(product.watchSpec);
+    const movementSnapshot = buildMovementSnapshot(
+        product.watchSpec?.movement,
+        product.watchSpec?.caliber
+    );
+    const strapClaspSnapshot = buildStrapClaspSnapshot({
+        strap: product.watchSpec?.strap,
+        hasClasp: product.watchSpec?.hasClasp,
+    });
+
+    return db.productContent.upsert({
+        where: { productId },
+        create: {
+            productId,
+            titleSnapshot: toPlainText(product.title),
+            brandSnapshot: toPlainText(product.brand?.name),
+            refSnapshot: toPlainText(product.watchSpec?.ref),
+            sizeSnapshot,
+            movementSnapshot,
+            glassSnapshot: toPlainText(product.watchSpec?.glass),
+            strapClaspSnapshot,
+            modelSnapshot: toPlainText(product.watchSpec?.model),
+            yearSnapshot: toPlainText(product.watchSpec?.year),
+        },
+        update: {
+            titleSnapshot: toPlainText(product.title),
+            brandSnapshot: toPlainText(product.brand?.name),
+            refSnapshot: toPlainText(product.watchSpec?.ref),
+            sizeSnapshot,
+            movementSnapshot,
+            glassSnapshot: toPlainText(product.watchSpec?.glass),
+            strapClaspSnapshot,
+            modelSnapshot: toPlainText(product.watchSpec?.model),
+            yearSnapshot: toPlainText(product.watchSpec?.year),
+        },
+        select: {
+            productId: true,
+            titleSnapshot: true,
+            brandSnapshot: true,
+            refSnapshot: true,
+            sizeSnapshot: true,
+            movementSnapshot: true,
+            glassSnapshot: true,
+            strapClaspSnapshot: true,
+            modelSnapshot: true,
+            yearSnapshot: true,
+            generatedContent: true,
+            promptNote: true,
+            generatedAt: true,
+            updatedAt: true,
+        },
+    });
+}
+
+export async function saveProductContent(
+    tx: DB,
+    productId: string,
+    payload: {
+        generatedContent?: string | null;
+        promptNote?: string | null;
+    }
+) {
+    const db = dbOrTx(tx);
+
+    const generatedContent = toPlainText(payload.generatedContent);
+    const promptNote = toPlainText(payload.promptNote);
+    const generatedAt = generatedContent ? new Date() : null;
+
+    const content = await db.productContent.upsert({
+        where: { productId },
+        create: {
+            productId,
+            generatedContent,
+            promptNote,
+            generatedAt,
+        },
+        update: {
+            generatedContent,
+            promptNote,
+            generatedAt,
+        },
+        select: {
+            productId: true,
+            titleSnapshot: true,
+            brandSnapshot: true,
+            refSnapshot: true,
+            sizeSnapshot: true,
+            movementSnapshot: true,
+            glassSnapshot: true,
+            strapClaspSnapshot: true,
+            modelSnapshot: true,
+            yearSnapshot: true,
+            generatedContent: true,
+            promptNote: true,
+            generatedAt: true,
+            updatedAt: true,
+        },
+    });
+
+    await db.product.update({
+        where: { id: productId },
+        data: {
+            postContent: generatedContent,
+            aiPromptUsed: promptNote,
+            aiGeneratedAt: generatedAt,
+            contentStatus: ContentStatus.DRAFT,
+        },
+        select: { id: true },
+    });
+
+    return content;
+}
+
 export async function getProductServiceHistory(tx: DB, productId: string) {
     const db = dbOrTx(tx);
 
@@ -1375,9 +1782,9 @@ export async function getProductServiceHistory(tx: DB, productId: string) {
             vendorNameSnap: true,
             skuSnapshot: true,
             primaryImageUrlSnapshot: true,
-            ServiceCatalog: {
-                select: { id: true, code: true, name: true },
-            },
+            //ServiceCatalog: {
+            //select: { id: true, code: true, name: true },
+            //},
             orderItem: {
                 select: {
                     id: true,
