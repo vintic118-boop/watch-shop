@@ -39,3 +39,6 @@ export { MechanicalPartCatalogResultSchema } from './MechanicalPartCatalog.resul
 export { approvalRequestsResultSchema } from './approvalRequests.result';
 export { maintenanceLogsResultSchema } from './maintenanceLogs.result';
 export { technicalAssessmentsResultSchema } from './technicalAssessments.result';
+export { technicalActionCatalogResultSchema } from './technicalActionCatalog.result';
+export { technicalAppearanceIssueCatalogResultSchema } from './technicalAppearanceIssueCatalog.result';
+export { technicalPartCatalogResultSchema } from './technicalPartCatalog.result';

@@ -39,3 +39,6 @@ export { MechanicalPartCatalogInputSchema } from './MechanicalPartCatalog.input'
 export { approvalRequestsInputSchema } from './approvalRequests.input';
 export { maintenanceLogsInputSchema } from './maintenanceLogs.input';
 export { technicalAssessmentsInputSchema } from './technicalAssessments.input';
+export { technicalActionCatalogInputSchema } from './technicalActionCatalog.input';
+export { technicalAppearanceIssueCatalogInputSchema } from './technicalAppearanceIssueCatalog.input';
+export { technicalPartCatalogInputSchema } from './technicalPartCatalog.input';

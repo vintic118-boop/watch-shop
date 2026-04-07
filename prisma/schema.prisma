@@ -887,6 +887,53 @@ model technicalAssessments {
   @@index([serviceRequestId], map: "idx_technicalassessments_servicerequestid")
 }
 
+model technicalActionCatalog {
+  id                   String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  code                 String   @unique
+  name                 String
+  appliesTo            String   @default("BOTH")
+  groupKey             String   @default("MOVEMENT")
+  requiresPart         Boolean  @default(false)
+  defaultExecutionMode String?
+  sortOrder            Int      @default(0)
+  isActive             Boolean  @default(true)
+  note                 String?
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([isActive, groupKey, appliesTo, sortOrder], map: "technicalActionCatalog_active_idx")
+}
+
+model technicalAppearanceIssueCatalog {
+  id             String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  code           String   @unique
+  area           String
+  label          String
+  deductionScore Int      @default(0)
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  note           String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([isActive, area, sortOrder], map: "technicalAppearanceIssueCatalog_active_idx")
+}
+
+model technicalPartCatalog {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  code      String   @unique
+  name      String
+  appliesTo String   @default("BOTH")
+  partGroup String   @default("MOVEMENT")
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  note      String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([isActive, partGroup, appliesTo, sortOrder], map: "technicalPartCatalog_active_idx")
+}
+
 enum Category {
   ENTRY
   MID_RANGE
