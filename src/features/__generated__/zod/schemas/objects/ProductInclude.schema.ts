@@ -23,7 +23,7 @@ const makeSchema = () => z.object({
   brand: z.union([z.boolean(), z.lazy(() => BrandArgsObjectSchema)]).optional(),
   ProductCategory: z.union([z.boolean(), z.lazy(() => ProductCategoryArgsObjectSchema)]).optional(),
   vendor: z.union([z.boolean(), z.lazy(() => VendorArgsObjectSchema)]).optional(),
-  content: z.union([z.boolean(), z.lazy(() => ProductContentArgsObjectSchema)]).optional(),
+  ProductContent: z.union([z.boolean(), z.lazy(() => ProductContentArgsObjectSchema)]).optional(),
   image: z.union([z.boolean(), z.lazy(() => ProductImageFindManySchema)]).optional(),
   variants: z.union([z.boolean(), z.lazy(() => ProductVariantFindManySchema)]).optional(),
   Reservation: z.union([z.boolean(), z.lazy(() => ReservationFindManySchema)]).optional(),

@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import type { Prisma } from '@prisma/client';
-import { ProductCreateNestedOneWithoutContentInputObjectSchema as ProductCreateNestedOneWithoutContentInputObjectSchema } from './ProductCreateNestedOneWithoutContentInput.schema'
+import { ProductCreateNestedOneWithoutProductContentInputObjectSchema as ProductCreateNestedOneWithoutProductContentInputObjectSchema } from './ProductCreateNestedOneWithoutProductContentInput.schema'
 
 const makeSchema = () => z.object({
   titleSnapshot: z.string().optional().nullable(),
@@ -17,7 +17,7 @@ const makeSchema = () => z.object({
   generatedAt: z.coerce.date().optional().nullable(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
-  Product: z.lazy(() => ProductCreateNestedOneWithoutContentInputObjectSchema)
+  Product: z.lazy(() => ProductCreateNestedOneWithoutProductContentInputObjectSchema)
 }).strict();
 export const ProductContentCreateInputObjectSchema: z.ZodType<Prisma.ProductContentCreateInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductContentCreateInput>;
 export const ProductContentCreateInputObjectZodSchema = makeSchema();

@@ -5,13 +5,13 @@ import { PriceVisibilitySchema } from '../enums/PriceVisibility.schema';
 import { TagSchema } from '../enums/Tag.schema';
 import { ProductStatusSchema } from '../enums/ProductStatus.schema';
 import { ContentStatusSchema } from '../enums/ContentStatus.schema';
+import { AcquisitionItemCreateNestedManyWithoutProductInputObjectSchema as AcquisitionItemCreateNestedManyWithoutProductInputObjectSchema } from './AcquisitionItemCreateNestedManyWithoutProductInput.schema';
 import { InvoiceItemCreateNestedManyWithoutProductInputObjectSchema as InvoiceItemCreateNestedManyWithoutProductInputObjectSchema } from './InvoiceItemCreateNestedManyWithoutProductInput.schema';
 import { MaintenanceRecordCreateNestedManyWithoutProductInputObjectSchema as MaintenanceRecordCreateNestedManyWithoutProductInputObjectSchema } from './MaintenanceRecordCreateNestedManyWithoutProductInput.schema';
 import { OrderItemCreateNestedManyWithoutProductInputObjectSchema as OrderItemCreateNestedManyWithoutProductInputObjectSchema } from './OrderItemCreateNestedManyWithoutProductInput.schema';
 import { BrandCreateNestedOneWithoutProductsInputObjectSchema as BrandCreateNestedOneWithoutProductsInputObjectSchema } from './BrandCreateNestedOneWithoutProductsInput.schema';
 import { ProductCategoryCreateNestedOneWithoutProductInputObjectSchema as ProductCategoryCreateNestedOneWithoutProductInputObjectSchema } from './ProductCategoryCreateNestedOneWithoutProductInput.schema';
 import { VendorCreateNestedOneWithoutProductInputObjectSchema as VendorCreateNestedOneWithoutProductInputObjectSchema } from './VendorCreateNestedOneWithoutProductInput.schema';
-import { ProductContentCreateNestedOneWithoutProductInputObjectSchema as ProductContentCreateNestedOneWithoutProductInputObjectSchema } from './ProductContentCreateNestedOneWithoutProductInput.schema';
 import { ProductImageCreateNestedManyWithoutProductInputObjectSchema as ProductImageCreateNestedManyWithoutProductInputObjectSchema } from './ProductImageCreateNestedManyWithoutProductInput.schema';
 import { ProductVariantCreateNestedManyWithoutProductInputObjectSchema as ProductVariantCreateNestedManyWithoutProductInputObjectSchema } from './ProductVariantCreateNestedManyWithoutProductInput.schema';
 import { ReservationCreateNestedManyWithoutProductInputObjectSchema as ReservationCreateNestedManyWithoutProductInputObjectSchema } from './ReservationCreateNestedManyWithoutProductInput.schema';
@@ -39,18 +39,18 @@ const makeSchema = () => z.object({
   aiPromptUsed: z.string().optional().nullable(),
   aiGeneratedAt: z.coerce.date().optional().nullable(),
   sku: z.string().optional().nullable(),
+  AcquisitionItem: z.lazy(() => AcquisitionItemCreateNestedManyWithoutProductInputObjectSchema).optional(),
   InvoiceItem: z.lazy(() => InvoiceItemCreateNestedManyWithoutProductInputObjectSchema).optional(),
   maintenanceRecords: z.lazy(() => MaintenanceRecordCreateNestedManyWithoutProductInputObjectSchema).optional(),
   orderItems: z.lazy(() => OrderItemCreateNestedManyWithoutProductInputObjectSchema).optional(),
   brand: z.lazy(() => BrandCreateNestedOneWithoutProductsInputObjectSchema).optional(),
   ProductCategory: z.lazy(() => ProductCategoryCreateNestedOneWithoutProductInputObjectSchema).optional(),
   vendor: z.lazy(() => VendorCreateNestedOneWithoutProductInputObjectSchema).optional(),
-  ProductContent: z.lazy(() => ProductContentCreateNestedOneWithoutProductInputObjectSchema).optional(),
   image: z.lazy(() => ProductImageCreateNestedManyWithoutProductInputObjectSchema).optional(),
   variants: z.lazy(() => ProductVariantCreateNestedManyWithoutProductInputObjectSchema).optional(),
   Reservation: z.lazy(() => ReservationCreateNestedManyWithoutProductInputObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestCreateNestedManyWithoutProductInputObjectSchema).optional(),
   watchSpec: z.lazy(() => WatchSpecCreateNestedOneWithoutProductInputObjectSchema).optional()
 }).strict();
-export const ProductCreateWithoutAcquisitionItemInputObjectSchema: z.ZodType<Prisma.ProductCreateWithoutAcquisitionItemInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductCreateWithoutAcquisitionItemInput>;
-export const ProductCreateWithoutAcquisitionItemInputObjectZodSchema = makeSchema();
+export const ProductCreateWithoutProductContentInputObjectSchema: z.ZodType<Prisma.ProductCreateWithoutProductContentInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductCreateWithoutProductContentInput>;
+export const ProductCreateWithoutProductContentInputObjectZodSchema = makeSchema();

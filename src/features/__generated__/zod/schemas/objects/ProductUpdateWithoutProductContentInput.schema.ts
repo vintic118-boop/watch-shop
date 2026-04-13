@@ -16,16 +16,18 @@ import { ProductStatusSchema } from '../enums/ProductStatus.schema';
 import { EnumProductStatusFieldUpdateOperationsInputObjectSchema as EnumProductStatusFieldUpdateOperationsInputObjectSchema } from './EnumProductStatusFieldUpdateOperationsInput.schema';
 import { ContentStatusSchema } from '../enums/ContentStatus.schema';
 import { EnumContentStatusFieldUpdateOperationsInputObjectSchema as EnumContentStatusFieldUpdateOperationsInputObjectSchema } from './EnumContentStatusFieldUpdateOperationsInput.schema';
-import { AcquisitionItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema as AcquisitionItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './AcquisitionItemUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema as InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './InvoiceItemUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema as MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema as OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './OrderItemUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema as ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema } from './ProductContentUncheckedUpdateOneWithoutProductNestedInput.schema';
-import { ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ProductImageUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ProductVariantUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ReservationUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { ServiceRequestUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ServiceRequestUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ServiceRequestUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { WatchSpecUncheckedUpdateOneWithoutProductNestedInputObjectSchema as WatchSpecUncheckedUpdateOneWithoutProductNestedInputObjectSchema } from './WatchSpecUncheckedUpdateOneWithoutProductNestedInput.schema'
+import { AcquisitionItemUpdateManyWithoutProductNestedInputObjectSchema as AcquisitionItemUpdateManyWithoutProductNestedInputObjectSchema } from './AcquisitionItemUpdateManyWithoutProductNestedInput.schema';
+import { InvoiceItemUpdateManyWithoutProductNestedInputObjectSchema as InvoiceItemUpdateManyWithoutProductNestedInputObjectSchema } from './InvoiceItemUpdateManyWithoutProductNestedInput.schema';
+import { MaintenanceRecordUpdateManyWithoutProductNestedInputObjectSchema as MaintenanceRecordUpdateManyWithoutProductNestedInputObjectSchema } from './MaintenanceRecordUpdateManyWithoutProductNestedInput.schema';
+import { OrderItemUpdateManyWithoutProductNestedInputObjectSchema as OrderItemUpdateManyWithoutProductNestedInputObjectSchema } from './OrderItemUpdateManyWithoutProductNestedInput.schema';
+import { BrandUpdateOneWithoutProductsNestedInputObjectSchema as BrandUpdateOneWithoutProductsNestedInputObjectSchema } from './BrandUpdateOneWithoutProductsNestedInput.schema';
+import { ProductCategoryUpdateOneWithoutProductNestedInputObjectSchema as ProductCategoryUpdateOneWithoutProductNestedInputObjectSchema } from './ProductCategoryUpdateOneWithoutProductNestedInput.schema';
+import { VendorUpdateOneWithoutProductNestedInputObjectSchema as VendorUpdateOneWithoutProductNestedInputObjectSchema } from './VendorUpdateOneWithoutProductNestedInput.schema';
+import { ProductImageUpdateManyWithoutProductNestedInputObjectSchema as ProductImageUpdateManyWithoutProductNestedInputObjectSchema } from './ProductImageUpdateManyWithoutProductNestedInput.schema';
+import { ProductVariantUpdateManyWithoutProductNestedInputObjectSchema as ProductVariantUpdateManyWithoutProductNestedInputObjectSchema } from './ProductVariantUpdateManyWithoutProductNestedInput.schema';
+import { ReservationUpdateManyWithoutProductNestedInputObjectSchema as ReservationUpdateManyWithoutProductNestedInputObjectSchema } from './ReservationUpdateManyWithoutProductNestedInput.schema';
+import { ServiceRequestUpdateManyWithoutProductNestedInputObjectSchema as ServiceRequestUpdateManyWithoutProductNestedInputObjectSchema } from './ServiceRequestUpdateManyWithoutProductNestedInput.schema';
+import { WatchSpecUpdateOneWithoutProductNestedInputObjectSchema as WatchSpecUpdateOneWithoutProductNestedInputObjectSchema } from './WatchSpecUpdateOneWithoutProductNestedInput.schema'
 
 const makeSchema = () => z.object({
   id: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputObjectSchema)]).optional(),
@@ -39,27 +41,27 @@ const makeSchema = () => z.object({
   isStockManaged: z.union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputObjectSchema)]).optional(),
   maxQtyPerOrder: z.union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputObjectSchema)]).optional(),
   publishedAt: z.union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
-  vendorId: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   createdAt: z.union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputObjectSchema)]).optional(),
   updatedAt: z.union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputObjectSchema)]).optional(),
   tag: z.union([TagSchema, z.lazy(() => EnumTagFieldUpdateOperationsInputObjectSchema)]).optional(),
   status: z.union([ProductStatusSchema, z.lazy(() => EnumProductStatusFieldUpdateOperationsInputObjectSchema)]).optional(),
-  categoryId: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   contentStatus: z.union([ContentStatusSchema, z.lazy(() => EnumContentStatusFieldUpdateOperationsInputObjectSchema)]).optional(),
   postContent: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   aiPromptUsed: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   aiGeneratedAt: z.union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   sku: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
-  AcquisitionItem: z.lazy(() => AcquisitionItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  InvoiceItem: z.lazy(() => InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  maintenanceRecords: z.lazy(() => MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  orderItems: z.lazy(() => OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  ProductContent: z.lazy(() => ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema).optional(),
-  image: z.lazy(() => ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  variants: z.lazy(() => ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  Reservation: z.lazy(() => ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  ServiceRequest: z.lazy(() => ServiceRequestUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  watchSpec: z.lazy(() => WatchSpecUncheckedUpdateOneWithoutProductNestedInputObjectSchema).optional()
+  AcquisitionItem: z.lazy(() => AcquisitionItemUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  InvoiceItem: z.lazy(() => InvoiceItemUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  maintenanceRecords: z.lazy(() => MaintenanceRecordUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  orderItems: z.lazy(() => OrderItemUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  brand: z.lazy(() => BrandUpdateOneWithoutProductsNestedInputObjectSchema).optional(),
+  ProductCategory: z.lazy(() => ProductCategoryUpdateOneWithoutProductNestedInputObjectSchema).optional(),
+  vendor: z.lazy(() => VendorUpdateOneWithoutProductNestedInputObjectSchema).optional(),
+  image: z.lazy(() => ProductImageUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  variants: z.lazy(() => ProductVariantUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  Reservation: z.lazy(() => ReservationUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  ServiceRequest: z.lazy(() => ServiceRequestUpdateManyWithoutProductNestedInputObjectSchema).optional(),
+  watchSpec: z.lazy(() => WatchSpecUpdateOneWithoutProductNestedInputObjectSchema).optional()
 }).strict();
-export const ProductUncheckedUpdateWithoutBrandInputObjectSchema: z.ZodType<Prisma.ProductUncheckedUpdateWithoutBrandInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductUncheckedUpdateWithoutBrandInput>;
-export const ProductUncheckedUpdateWithoutBrandInputObjectZodSchema = makeSchema();
+export const ProductUpdateWithoutProductContentInputObjectSchema: z.ZodType<Prisma.ProductUpdateWithoutProductContentInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductUpdateWithoutProductContentInput>;
+export const ProductUpdateWithoutProductContentInputObjectZodSchema = makeSchema();

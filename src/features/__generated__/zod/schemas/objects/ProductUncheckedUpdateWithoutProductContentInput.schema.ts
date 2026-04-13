@@ -20,7 +20,6 @@ import { AcquisitionItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema
 import { InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema as InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './InvoiceItemUncheckedUpdateManyWithoutProductNestedInput.schema';
 import { MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema as MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInput.schema';
 import { OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema as OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './OrderItemUncheckedUpdateManyWithoutProductNestedInput.schema';
-import { ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema as ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema } from './ProductContentUncheckedUpdateOneWithoutProductNestedInput.schema';
 import { ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ProductImageUncheckedUpdateManyWithoutProductNestedInput.schema';
 import { ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ProductVariantUncheckedUpdateManyWithoutProductNestedInput.schema';
 import { ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema as ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema } from './ReservationUncheckedUpdateManyWithoutProductNestedInput.schema';
@@ -34,6 +33,7 @@ const makeSchema = () => z.object({
   primaryImageUrl: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   type: z.union([ProductTypeSchema, z.lazy(() => EnumProductTypeFieldUpdateOperationsInputObjectSchema)]).optional(),
   priceVisibility: z.union([PriceVisibilitySchema, z.lazy(() => EnumPriceVisibilityFieldUpdateOperationsInputObjectSchema)]).optional(),
+  brandId: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   seoTitle: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   seoDescription: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   isStockManaged: z.union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputObjectSchema)]).optional(),
@@ -54,12 +54,11 @@ const makeSchema = () => z.object({
   InvoiceItem: z.lazy(() => InvoiceItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   maintenanceRecords: z.lazy(() => MaintenanceRecordUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   orderItems: z.lazy(() => OrderItemUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
-  ProductContent: z.lazy(() => ProductContentUncheckedUpdateOneWithoutProductNestedInputObjectSchema).optional(),
   image: z.lazy(() => ProductImageUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   variants: z.lazy(() => ProductVariantUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   Reservation: z.lazy(() => ReservationUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   ServiceRequest: z.lazy(() => ServiceRequestUncheckedUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   watchSpec: z.lazy(() => WatchSpecUncheckedUpdateOneWithoutProductNestedInputObjectSchema).optional()
 }).strict();
-export const ProductUncheckedUpdateWithoutBrandInputObjectSchema: z.ZodType<Prisma.ProductUncheckedUpdateWithoutBrandInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductUncheckedUpdateWithoutBrandInput>;
-export const ProductUncheckedUpdateWithoutBrandInputObjectZodSchema = makeSchema();
+export const ProductUncheckedUpdateWithoutProductContentInputObjectSchema: z.ZodType<Prisma.ProductUncheckedUpdateWithoutProductContentInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductUncheckedUpdateWithoutProductContentInput>;
+export const ProductUncheckedUpdateWithoutProductContentInputObjectZodSchema = makeSchema();

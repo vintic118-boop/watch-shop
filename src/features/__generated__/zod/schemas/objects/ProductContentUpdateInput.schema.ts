@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { NullableStringFieldUpdateOperationsInputObjectSchema as NullableStringFieldUpdateOperationsInputObjectSchema } from './NullableStringFieldUpdateOperationsInput.schema';
 import { NullableDateTimeFieldUpdateOperationsInputObjectSchema as NullableDateTimeFieldUpdateOperationsInputObjectSchema } from './NullableDateTimeFieldUpdateOperationsInput.schema';
 import { DateTimeFieldUpdateOperationsInputObjectSchema as DateTimeFieldUpdateOperationsInputObjectSchema } from './DateTimeFieldUpdateOperationsInput.schema';
-import { ProductUpdateOneRequiredWithoutContentNestedInputObjectSchema as ProductUpdateOneRequiredWithoutContentNestedInputObjectSchema } from './ProductUpdateOneRequiredWithoutContentNestedInput.schema'
+import { ProductUpdateOneRequiredWithoutProductContentNestedInputObjectSchema as ProductUpdateOneRequiredWithoutProductContentNestedInputObjectSchema } from './ProductUpdateOneRequiredWithoutProductContentNestedInput.schema'
 
 const makeSchema = () => z.object({
   titleSnapshot: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
@@ -20,7 +20,7 @@ const makeSchema = () => z.object({
   generatedAt: z.union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   createdAt: z.union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputObjectSchema)]).optional(),
   updatedAt: z.union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputObjectSchema)]).optional(),
-  Product: z.lazy(() => ProductUpdateOneRequiredWithoutContentNestedInputObjectSchema).optional()
+  Product: z.lazy(() => ProductUpdateOneRequiredWithoutProductContentNestedInputObjectSchema).optional()
 }).strict();
 export const ProductContentUpdateInputObjectSchema: z.ZodType<Prisma.ProductContentUpdateInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductContentUpdateInput>;
 export const ProductContentUpdateInputObjectZodSchema = makeSchema();
