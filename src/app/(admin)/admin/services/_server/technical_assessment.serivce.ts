@@ -428,22 +428,28 @@ export async function getTechnicalAssessmentPanel(serviceRequestId: string) {
 
 export async function openTechnicalAssessment(serviceRequestId: string) {
     return prisma.$transaction(async (tx) => {
-        const existing = await tx.technicalAssessment.findFirst({
-            where: {
-                serviceRequestId,
-                status: {
-                    in: ["DRAFT", "IN_PROGRESS"],
-                },
-            },
-            orderBy: { createdAt: "desc" },
+        const existing = await tx.technicalAssessment.findUnique({
+            where: { serviceRequestId },
         });
 
-        if (existing) return existing;
+        if (existing) {
+            if (existing.status === TechnicalAssessmentStatus.COMPLETED) {
+                return tx.technicalAssessment.update({
+                    where: { id: existing.id },
+                    data: {
+                        status: TechnicalAssessmentStatus.IN_PROGRESS,
+                        updatedAt: new Date(),
+                    },
+                });
+            }
+
+            return existing;
+        }
 
         const created = await tx.technicalAssessment.create({
             data: {
                 serviceRequestId,
-                status: "DRAFT",
+                status: TechnicalAssessmentStatus.DRAFT,
             },
         });
 
@@ -459,6 +465,7 @@ export async function openTechnicalAssessment(serviceRequestId: string) {
 }
 
 export async function saveTechnicalAssessment(input: any) {
+    await assertServiceRequestEditable(input.serviceRequestId);
     const serviceRequestId = String(input?.serviceRequestId || "").trim();
     if (!serviceRequestId) {
         throw new Error("Missing serviceRequestId");
@@ -617,9 +624,8 @@ export async function completeTechnicalAssessment(assessmentId: string) {
 
 export async function completeServiceRequestById(serviceRequestId: string) {
     return prisma.$transaction(async (tx) => {
-        const assessment = await tx.technicalAssessment.findFirst({
+        const assessment = await tx.technicalAssessment.findUnique({
             where: { serviceRequestId },
-            orderBy: [{ createdAt: "desc" }],
             include: {
                 TechnicalIssue: true,
             },
@@ -661,9 +667,21 @@ export async function completeServiceRequestById(serviceRequestId: string) {
         };
     });
 }
-
 export async function getServiceRequestTechnicalSummary(serviceRequestId: string) {
     return repo.getTechnicalSummaryByServiceRequest(serviceRequestId);
 }
 
 
+export async function assertServiceRequestEditable(serviceRequestId: string) {
+    const sr = await repo.findServiceRequestStatusById(serviceRequestId);
+
+    if (!sr) {
+        throw new Error("Service request không tồn tại");
+    }
+
+    if (String(sr.status).toUpperCase() === "COMPLETED") {
+        throw new Error("Service request đã hoàn tất, không thể chỉnh sửa nữa");
+    }
+
+    return sr;
+}

@@ -1,5 +1,6 @@
-import ProductListClient from "./_client/ListProducts";
-import { getAdminProductList } from "./_server/product.service";
+import { getAdminProductList } from "./_server/core/product.service"
+import ListProducts from "./_client/ListProducts";
+//import AdminProductListPageClient from "./_client/ListProductsOld";
 
 import { parseProductListSearchParams } from "./helpers/search-params";
 import { getCurrentUser } from "@/server/auth/getCurrentUser";
@@ -86,7 +87,7 @@ export default async function ProductListPage({
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
     return (
-        <ProductListClient
+        <ListProducts
             items={serialize(items)}
             total={total}
             counts={counts}

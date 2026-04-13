@@ -425,7 +425,6 @@ export async function upsertAssessment(
         },
     });
 }
-
 export async function listAssessmentIssuesForSync(
     tx: Prisma.TransactionClient,
     assessmentId: string
@@ -481,12 +480,12 @@ export async function countAssessmentIssues(
 }
 
 export async function getTechnicalSummaryByServiceRequest(serviceRequestId: string) {
-    const assessments = await prisma.technicalAssessment.findMany({
+    const assessment = await prisma.technicalAssessment.findUnique({
         where: { serviceRequestId },
-        orderBy: [{ createdAt: "desc" }],
         select: {
             id: true,
             status: true,
+            createdAt: true,
             updatedAt: true,
             TechnicalIssue: {
                 select: {
@@ -498,44 +497,47 @@ export async function getTechnicalSummaryByServiceRequest(serviceRequestId: stri
         },
     });
 
-    const assessmentCount = assessments.length;
+    if (!assessment) {
+        return {
+            assessmentCount: 0,
+            issueCount: 0,
+            openIssueCount: 0,
+            activeAssessment: null,
+        };
+    }
 
-    const issueCount = assessments.reduce(
-        (sum, a) =>
-            sum + (a.TechnicalIssue?.filter((x: any) => x.isConfirmed).length ?? 0),
-        0
+    const confirmedIssues = assessment.TechnicalIssue?.filter((x: any) => x.isConfirmed) ?? [];
+    const openConfirmedIssues = confirmedIssues.filter(
+        (x: any) =>
+            x.executionStatus === TechnicalIssueExecutionStatus.OPEN ||
+            x.executionStatus === TechnicalIssueExecutionStatus.IN_PROGRESS
     );
 
-    const openIssueCount = assessments.reduce((sum, a) => {
-        return (
-            sum +
-            (a.TechnicalIssue?.filter(
-                (x: any) =>
-                    x.isConfirmed &&
-                    (x.executionStatus === TechnicalIssueExecutionStatus.OPEN ||
-                        x.executionStatus === TechnicalIssueExecutionStatus.IN_PROGRESS)
-            ).length ?? 0)
-        );
-    }, 0);
-
     const activeAssessment =
-        assessments.find((a) => a.status === "DRAFT" || a.status === "IN_PROGRESS") ||
-        null;
+        assessment.status === "DRAFT" || assessment.status === "IN_PROGRESS"
+            ? {
+                id: assessment.id,
+                status: assessment.status,
+                issueCount: confirmedIssues.length,
+                updatedAt: assessment.updatedAt,
+            }
+            : null;
 
     return {
-        assessmentCount,
-        issueCount,
-        openIssueCount,
-        activeAssessment: activeAssessment
-            ? {
-                id: activeAssessment.id,
-                status: activeAssessment.status,
-                issueCount:
-                    activeAssessment.TechnicalIssue?.filter(
-                        (x: any) => x.isConfirmed
-                    ).length ?? 0,
-                updatedAt: activeAssessment.updatedAt,
-            }
-            : null,
+        assessmentCount: 1,
+        issueCount: confirmedIssues.length,
+        openIssueCount: openConfirmedIssues.length,
+        activeAssessment,
     };
+}
+
+
+export async function findServiceRequestStatusById(serviceRequestId: string) {
+    return prisma.serviceRequest.findUnique({
+        where: { id: serviceRequestId },
+        select: {
+            id: true,
+            status: true,
+        },
+    });
 }

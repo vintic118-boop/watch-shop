@@ -409,6 +409,45 @@ export async function completeServiceRequest(input: {
             return { ok: true, skipped: true, status: existing.status };
         }
 
+        const technicalAssessment = await tx.technicalAssessment.findUnique({
+            where: { serviceRequestId },
+            select: {
+                id: true,
+                movementKind: true,
+                imageFileKey: true,
+                TechnicalIssue: {
+                    select: {
+                        id: true,
+                        isConfirmed: true,
+                        executionStatus: true,
+                    },
+                },
+            },
+        });
+
+        if (technicalAssessment) {
+            const confirmedIssues = technicalAssessment.TechnicalIssue.filter(
+                (issue: any) => issue.isConfirmed && String(issue.executionStatus || "").toUpperCase() !== "CANCELED"
+            );
+            const hasOpenConfirmedIssue = confirmedIssues.some((issue: any) => {
+                const status = String(issue.executionStatus || "").toUpperCase();
+                return status === "OPEN" || status === "IN_PROGRESS";
+            });
+
+            if (hasOpenConfirmedIssue) {
+                throw new Error("Còn issue đã xác nhận nhưng chưa hoàn tất");
+            }
+
+            const needsMechanicalImage =
+                String(technicalAssessment.movementKind || "").toUpperCase() === "MECHANICAL" &&
+                confirmedIssues.length > 0 &&
+                !String(technicalAssessment.imageFileKey || "").trim();
+
+            if (needsMechanicalImage) {
+                throw new Error("Máy cơ đã hoàn tất issue nhưng vẫn chưa có hình ảnh kỹ thuật.");
+            }
+        }
+
         const completedAt = new Date();
         const updated = await serviceRequestRepo.completeServiceRequestOne(tx as any, {
             id: serviceRequestId,
@@ -523,4 +562,258 @@ export async function getServiceRequestDetailRepo(serviceRequestId: string) {
             },
         },
     });
+}
+export async function bumpPriorityForProductOrder(input: {
+    productId: string;
+    reason?: string | null;
+    source?: string | null;
+}) {
+    const productId = String(input.productId || "").trim();
+    if (!productId) throw new Error("Missing productId");
+
+    return prisma.$transaction(async (tx) => {
+        const existingRequest = (await serviceRequestRepo.findOpenPriorityCandidateByProductId(
+            tx as any,
+            productId
+        )) as
+            | {
+                id: string;
+                productId: string | null;
+                status: string;
+                priority?: string | null;
+                priorityReason?: string | null;
+                prioritySource?: string | null;
+                priorityMarkedAt?: Date | null;
+            }
+            | null;
+
+        if (!existingRequest?.id) return null;
+
+        return serviceRequestRepo.updatePriority(tx as any, {
+            id: existingRequest.id,
+            priority: "URGENT",
+            priorityReason: input.reason ?? "Sản phẩm đã có đơn hàng",
+            prioritySource: input.source ?? "QUICK_ORDER",
+            priorityMarkedAt: new Date(),
+        });
+    });
+}
+
+export async function ensurePriorityTechnicalCheckForBuyBack(input: {
+    productId: string;
+    reason?: string | null;
+    source?: string | null;
+}) {
+    const productId = String(input.productId || "").trim();
+    if (!productId) throw new Error("Missing productId");
+
+    return prisma.$transaction(async (tx) => {
+        const existingRequest = (await serviceRequestRepo.findOpenPriorityCandidateByProductId(
+            tx as any,
+            productId
+        )) as
+            | {
+                id: string;
+                productId: string | null;
+                status: string;
+            }
+            | null;
+
+        if (existingRequest?.id) {
+            return serviceRequestRepo.updatePriority(tx as any, {
+                id: existingRequest.id,
+                priority: "HIGH",
+                priorityReason: input.reason ?? "Buy back cần kiểm tra lại",
+                prioritySource: input.source ?? "BUY_BACK",
+                priorityMarkedAt: new Date(),
+            });
+        }
+
+        const product = await serviceRequestRepo.findProductForService(tx as any, productId);
+        if (!product) throw new Error("Không tìm thấy sản phẩm");
+
+        const tech = await resolveDefaultTechnicianTx(tx);
+        const variant = product.variants?.[0] ?? null;
+
+        const refNo = await genRefNo(tx as any, {
+            model: (tx as any).serviceRequest,
+            prefix: "SR",
+            field: "refNo",
+            padding: 6,
+        });
+
+        const created = await serviceRequestRepo.createTechnicalCheckRequest(tx as any, {
+            refNo,
+            productId,
+            variantId: variant?.id ?? null,
+            skuSnapshot: variant?.sku ?? null,
+            primaryImageUrlSnapshot: product.primaryImageUrl ?? null,
+            notes: input.reason ?? "Buy back cần kiểm tra lại",
+            billable: false,
+            type: ServiceType.PAID,
+            scope: ServiceScope.WITH_PURCHASE,
+            status: ServiceRequestStatus.DRAFT,
+            brandSnapshot: product.brand?.name ?? null,
+            modelSnapshot: product.watchSpec?.model ?? product.title ?? null,
+            refSnapshot: product.watchSpec?.ref ?? null,
+            technicianId: tech?.id ?? null,
+            technicianNameSnap: tech?.name ?? tech?.email ?? null,
+        });
+
+        await serviceRequestRepo.markProductInService(tx as any, productId);
+
+        await serviceRequestRepo.updatePriority(tx as any, {
+            id: created.id,
+            priority: "HIGH",
+            priorityReason: input.reason ?? "Buy back cần kiểm tra lại",
+            prioritySource: input.source ?? "BUY_BACK",
+            priorityMarkedAt: new Date(),
+        });
+
+        return created;
+    });
+}
+
+export async function createFromOrderTx(
+    tx: DB,
+    order: {
+        id: string;
+        refNo?: string | null;
+        customerName?: string | null;
+        items: Array<{
+            id: string;
+            kind?: string | null;
+            title?: string | null;
+            serviceScope?: string | null;
+            customerItemNote?: string | null;
+            linkedOrderItemId?: string | null;
+            serviceCatalogId?: string | null;
+            productId?: string | null;
+            variantId?: string | null;
+        }>;
+    }
+) {
+    if (!order?.id) throw new Error("Missing order.id");
+
+    const serviceItems = Array.isArray(order.items)
+        ? order.items.filter((item) => String(item.kind || "").toUpperCase() === "SERVICE")
+        : [];
+
+    if (!serviceItems.length) {
+        return { created: 0, skipped: 0, ids: [] as string[] };
+    }
+
+    const technician = await serviceRequestRepo.findDefaultTechnician(tx);
+
+    const createdIds: string[] = [];
+    let skipped = 0;
+
+    for (const item of serviceItems) {
+        if (!item?.id) {
+            skipped += 1;
+            continue;
+        }
+
+        const existed = await (tx as any).serviceRequest.findFirst({
+            where: {
+                orderItemId: item.id,
+            },
+            select: { id: true },
+        });
+
+        if (existed?.id) {
+            skipped += 1;
+            continue;
+        }
+
+        const scopeRaw = String(item.serviceScope || "CUSTOMER_ITEM").toUpperCase();
+        const scope =
+            scopeRaw === "WITH_PURCHASE"
+                ? ServiceScope.WITH_PURCHASE
+                : ServiceScope.CUSTOMER_OWNED;
+
+        let linkedProduct: Awaited<ReturnType<typeof serviceRequestRepo.findProductForService>> | null =
+            null;
+
+        if (scope === ServiceScope.WITH_PURCHASE && item.productId) {
+            linkedProduct = await serviceRequestRepo.findProductForService(tx, item.productId);
+        }
+
+        const variant = linkedProduct?.variants?.[0] ?? null;
+
+        const refNo = await genRefNo(tx as any, {
+            model: (tx as any).serviceRequest,
+            prefix: "SR",
+            field: "refNo",
+            padding: 6,
+        });
+
+        const titleParts = [
+            item.title?.trim() || null,
+            order.refNo ? `Đơn ${order.refNo}` : null,
+        ].filter(Boolean);
+
+        const noteParts = [
+            titleParts.length ? titleParts.join(" • ") : null,
+            order.customerName ? `Khách: ${order.customerName}` : null,
+            scope === ServiceScope.CUSTOMER_OWNED
+                ? item.customerItemNote?.trim() || null
+                : null,
+        ].filter(Boolean);
+
+        const created = await serviceRequestRepo.createOne(tx, {
+            refNo,
+            type: ServiceType.PAID,
+            billable: true,
+
+            scope,
+            status: ServiceRequestStatus.DRAFT,
+
+            notes: noteParts.length ? noteParts.join("\n") : null,
+
+            orderItem: {
+                connect: { id: item.id },
+            },
+
+            serviceCatalog: item.serviceCatalogId
+                ? {
+                    connect: { id: item.serviceCatalogId },
+                }
+                : undefined,
+
+            product: linkedProduct?.id
+                ? {
+                    connect: { id: linkedProduct.id },
+                }
+                : undefined,
+
+            variant: variant?.id
+                ? {
+                    connect: { id: variant.id },
+                }
+                : undefined,
+
+            skuSnapshot: variant?.sku ?? null,
+            primaryImageUrlSnapshot: linkedProduct?.primaryImageUrl ?? null,
+            brandSnapshot: linkedProduct?.brand?.name ?? null,
+            modelSnapshot: linkedProduct?.watchSpec?.model ?? linkedProduct?.title ?? null,
+            refSnapshot: linkedProduct?.watchSpec?.ref ?? null,
+
+            technicianId: technician?.id ?? null,
+            technicianNameSnap:
+                technician?.name?.trim() || technician?.email || null,
+        } as any);
+
+        if (linkedProduct?.id) {
+            await serviceRequestRepo.markProductInService(tx, linkedProduct.id);
+        }
+
+        createdIds.push(created.id);
+    }
+
+    return {
+        created: createdIds.length,
+        skipped,
+        ids: createdIds,
+    };
 }

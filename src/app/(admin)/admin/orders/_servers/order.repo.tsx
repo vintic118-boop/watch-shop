@@ -16,6 +16,8 @@ import { OrderDraftForEdit, OrderDraftInput } from "./order.type";
    TYPES
 ================================ */
 
+export type OrderFlowType = "STANDARD" | "QUICK_ORDER";
+
 export type CreateOrderRow = {
     customerId: string | null;
     customerName: string;
@@ -30,11 +32,13 @@ export type CreateOrderRow = {
     createdAt: Date;
     status: OrderStatus;
     source: OrderSource;
-
     verificationStatus: OrderVerificationStatus;
     reserveType: ReserveType | null;
     depositRequired: number | null;
     reserveUntil: Date | null;
+
+    quickFromProductId?: string | null;
+    quickFlowType?: OrderFlowType | null;
 };
 
 function normalizeReserve(data: CreateOrderRow) {
@@ -66,6 +70,7 @@ export type CreateOrderItemRow = {
     unitPriceAgreed: number;
     taxRate?: number;
     customerItemNote: string;
+    createdFromFlow?: OrderFlowType | null;
 };
 
 export type OrderViewKey =
@@ -379,6 +384,7 @@ export async function getOrdList(
 export async function createOrder(tx: DB, data: CreateOrderRow) {
     const db = dbOrTx(tx);
     const reserve = normalizeReserve(data);
+
     return db.order.create({
         data: {
             customer: data.customerId
@@ -394,16 +400,20 @@ export async function createOrder(tx: DB, data: CreateOrderRow) {
             paymentMethod: data.paymentMethod,
             hasShipment: data.hasShipment,
             notes: data.notes,
-            createdAt: data.createdAt, // ✅ đúng kiểu
+            createdAt: data.createdAt,
             status: data.status,
             subtotal: 0,
             source: data.source,
+
             verificationStatus: data.verificationStatus,
             reserveType: data.reserveType
                 ? (data.reserveType as ReserveType)
                 : null,
             depositRequired: reserve.depositRequired,
-            reserveUntil: reserve.reserveUntil
+            reserveUntil: reserve.reserveUntil,
+
+            quickFromProductId: data.quickFromProductId ?? null,
+            quickFlowType: (data.quickFlowType ?? "STANDARD") as any,
         },
         select: {
             id: true,
@@ -418,7 +428,6 @@ export async function createOrder(tx: DB, data: CreateOrderRow) {
             paymentMethod: true,
             notes: true,
             createdAt: true,
-
             updatedAt: true,
         },
     });
@@ -428,7 +437,6 @@ export async function createOrderItems(
     tx: DB,
     orderId: string,
     items: CreateOrderItemRow[],
-
 ) {
     const db = dbOrTx(tx);
     if (!items.length) return [];
@@ -436,6 +444,7 @@ export async function createOrderItems(
     const rows = items.map((i) => {
         const quantity = Number(i.quantity) || 1;
         const subtotal = i.unitPriceAgreed * quantity;
+
         return {
             orderId,
             productId: i.productId ?? null,
@@ -450,7 +459,8 @@ export async function createOrderItems(
             quantity,
             subtotal,
             taxRate: i.taxRate ?? null,
-            customerItemNote: i.customerItemNote
+            customerItemNote: i.customerItemNote,
+            createdFromFlow: (i.createdFromFlow ?? "STANDARD") as any,
         };
     });
 
@@ -785,5 +795,94 @@ export async function getOrderDetail(id: string, tx: DB) {
                 linkedProductTitle: item.OrderItem?.title ?? null,
             })),
         };
+    });
+}
+
+export type OrderProductResolutionRow = {
+    id: string;
+    title: string | null;
+    primaryImageUrl: string | null;
+    type: string | null;
+    status: string | null;
+    variants: Array<{
+        id: string;
+        availabilityStatus: string | null;
+        price: number | null;
+        stockQty: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+};
+
+export async function getProductsForOrderResolution(
+    tx: DB,
+    productIds: string[]
+): Promise<OrderProductResolutionRow[]> {
+    const db = dbOrTx(tx);
+
+    return db.product.findMany({
+        where: {
+            id: { in: productIds },
+            contentStatus: {
+                not: "ARCHIVED" as any,
+            },
+        },
+        select: {
+            id: true,
+            title: true,
+            primaryImageUrl: true,
+            type: true,
+            status: true,
+            variants: {
+                orderBy: [
+                    { updatedAt: "desc" },
+                    { createdAt: "asc" },
+                ],
+                select: {
+                    id: true,
+                    availabilityStatus: true,
+                    price: true,
+                    stockQty: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+            },
+        },
+    }) as any;
+}
+
+export async function reserveVariantIdsForOrder(
+    tx: DB,
+    input: {
+        variantIds: string[];
+        strictActiveOnly?: boolean;
+    }
+) {
+    const db = dbOrTx(tx);
+
+    if (!input.variantIds.length) return { count: 0 };
+
+    if (input.strictActiveOnly !== false) {
+        return db.productVariant.updateMany({
+            where: {
+                id: { in: input.variantIds },
+                availabilityStatus: "ACTIVE" as any,
+            },
+            data: {
+                availabilityStatus: "RESERVED" as any,
+            },
+        });
+    }
+
+    return db.productVariant.updateMany({
+        where: {
+            id: { in: input.variantIds },
+            availabilityStatus: {
+                in: ["ACTIVE", "HIDDEN"] as any,
+            },
+        },
+        data: {
+            availabilityStatus: "RESERVED" as any,
+        },
     });
 }
