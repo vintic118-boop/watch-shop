@@ -30,13 +30,11 @@ export const ProductResultSchema = z.object({
     aiPromptUsed: z.string().nullable(),
     aiGeneratedAt: z.date().nullable(),
     sku: z.string().nullable(),
-<<<<<<< HEAD
-=======
     nickname: z.string().nullable(),
     specStatus: z.string(),
     storefrontImageKey: z.string().nullable(),
->>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
     AcquisitionItem: z.array(z.unknown()),
+    AcquisitionSpecJob: z.array(z.unknown()),
     InvoiceItem: z.array(z.unknown()),
     maintenanceRecords: z.array(z.unknown()),
     orderItems: z.array(z.unknown()),

@@ -25,14 +25,10 @@ const makeSchema = () => z.object({
   postContent: SortOrderSchema.optional(),
   aiPromptUsed: SortOrderSchema.optional(),
   aiGeneratedAt: SortOrderSchema.optional(),
-<<<<<<< HEAD
-  sku: SortOrderSchema.optional()
-=======
   sku: SortOrderSchema.optional(),
   nickname: SortOrderSchema.optional(),
   specStatus: SortOrderSchema.optional(),
   storefrontImageKey: SortOrderSchema.optional()
->>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
 }).strict();
 export const ProductMaxOrderByAggregateInputObjectSchema: z.ZodType<Prisma.ProductMaxOrderByAggregateInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductMaxOrderByAggregateInput>;
 export const ProductMaxOrderByAggregateInputObjectZodSchema = makeSchema();

@@ -37,14 +37,10 @@ const makeSchema = () => z.object({
   postContent: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   aiPromptUsed: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   aiGeneratedAt: z.union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
-<<<<<<< HEAD
-  sku: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable()
-=======
   sku: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   nickname: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable(),
   specStatus: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputObjectSchema)]).optional(),
   storefrontImageKey: z.union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputObjectSchema)]).optional().nullable()
->>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
 }).strict();
 export const ProductUpdateManyMutationInputObjectSchema: z.ZodType<Prisma.ProductUpdateManyMutationInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductUpdateManyMutationInput>;
 export const ProductUpdateManyMutationInputObjectZodSchema = makeSchema();

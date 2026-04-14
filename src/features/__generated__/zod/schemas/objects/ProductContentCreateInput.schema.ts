@@ -1,5 +1,7 @@
 import * as z from 'zod';
 import type { Prisma } from '@prisma/client';
+import { ProductContentCreatespecBulletsInputObjectSchema as ProductContentCreatespecBulletsInputObjectSchema } from './ProductContentCreatespecBulletsInput.schema';
+import { ProductContentCreatehashtagsInputObjectSchema as ProductContentCreatehashtagsInputObjectSchema } from './ProductContentCreatehashtagsInput.schema';
 import { ProductCreateNestedOneWithoutProductContentInputObjectSchema as ProductCreateNestedOneWithoutProductContentInputObjectSchema } from './ProductCreateNestedOneWithoutProductContentInput.schema'
 
 const makeSchema = () => z.object({
@@ -17,6 +19,8 @@ const makeSchema = () => z.object({
   generatedAt: z.coerce.date().optional().nullable(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  specBullets: z.union([z.lazy(() => ProductContentCreatespecBulletsInputObjectSchema), z.string().array()]).optional(),
+  hashtags: z.union([z.lazy(() => ProductContentCreatehashtagsInputObjectSchema), z.string().array()]).optional(),
   Product: z.lazy(() => ProductCreateNestedOneWithoutProductContentInputObjectSchema)
 }).strict();
 export const ProductContentCreateInputObjectSchema: z.ZodType<Prisma.ProductContentCreateInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductContentCreateInput>;

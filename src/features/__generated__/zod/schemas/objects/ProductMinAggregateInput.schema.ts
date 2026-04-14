@@ -25,14 +25,10 @@ const makeSchema = () => z.object({
   postContent: z.literal(true).optional(),
   aiPromptUsed: z.literal(true).optional(),
   aiGeneratedAt: z.literal(true).optional(),
-<<<<<<< HEAD
-  sku: z.literal(true).optional()
-=======
   sku: z.literal(true).optional(),
   nickname: z.literal(true).optional(),
   specStatus: z.literal(true).optional(),
   storefrontImageKey: z.literal(true).optional()
->>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
 }).strict();
 export const ProductMinAggregateInputObjectSchema: z.ZodType<Prisma.ProductMinAggregateInputType> = makeSchema() as unknown as z.ZodType<Prisma.ProductMinAggregateInputType>;
 export const ProductMinAggregateInputObjectZodSchema = makeSchema();

@@ -61,7 +61,7 @@ const makeSchema = () => z.object({
   brand: z.lazy(() => BrandUpdateOneWithoutProductsNestedInputObjectSchema).optional(),
   ProductCategory: z.lazy(() => ProductCategoryUpdateOneWithoutProductNestedInputObjectSchema).optional(),
   vendor: z.lazy(() => VendorUpdateOneWithoutProductNestedInputObjectSchema).optional(),
-  content: z.lazy(() => ProductContentUpdateOneWithoutProductNestedInputObjectSchema).optional(),
+  ProductContent: z.lazy(() => ProductContentUpdateOneWithoutProductNestedInputObjectSchema).optional(),
   image: z.lazy(() => ProductImageUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   variants: z.lazy(() => ProductVariantUpdateManyWithoutProductNestedInputObjectSchema).optional(),
   Reservation: z.lazy(() => ReservationUpdateManyWithoutProductNestedInputObjectSchema).optional(),

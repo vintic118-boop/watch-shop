@@ -1473,7 +1473,7 @@ export async function getAdminProductDetail(tx: DB, productId: string) {
             brand: true,
             vendor: true,
             ProductCategory: true,
-            content: true,
+            //content: true,
             watchSpec: {
                 include: {
                     complication: true,

@@ -71,43 +71,40 @@ model ProductImage {
 }
 
 model Product {
-  id                 String              @id @default(cuid())
-  slug               String?             @unique
+  id                 String               @id @default(cuid())
+  slug               String?              @unique
   title              String
   primaryImageUrl    String?
   type               ProductType
-  priceVisibility    PriceVisibility     @default(SHOW)
+  priceVisibility    PriceVisibility      @default(SHOW)
   brandId            String?
   seoTitle           String?
   seoDescription     String?
-  isStockManaged     Boolean             @default(true)
-  maxQtyPerOrder     Int                 @default(1)
+  isStockManaged     Boolean              @default(true)
+  maxQtyPerOrder     Int                  @default(1)
   publishedAt        DateTime?
   vendorId           String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  tag                Tag                 @default(PRE_OWNED)
-  status             ProductStatus       @default(AVAILABLE)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  tag                Tag                  @default(PRE_OWNED)
+  status             ProductStatus        @default(AVAILABLE)
   categoryId         String?
-  contentStatus      ContentStatus       @default(DRAFT)
+  contentStatus      ContentStatus        @default(DRAFT)
   postContent        String?
   aiPromptUsed       String?
   aiGeneratedAt      DateTime?
-<<<<<<< HEAD
-  sku                String?             @unique
-=======
   sku                String?              @unique
   nickname           String?
   specStatus         String               @default("PENDING")
   storefrontImageKey String?
->>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem    AcquisitionItem[]
+  AcquisitionSpecJob AcquisitionSpecJob[]
   InvoiceItem        InvoiceItem[]
   maintenanceRecords MaintenanceRecord[]
   orderItems         OrderItem[]
-  brand              Brand?              @relation(fields: [brandId], references: [id])
-  ProductCategory    ProductCategory?    @relation(fields: [categoryId], references: [id])
-  vendor             Vendor?             @relation(fields: [vendorId], references: [id])
+  brand              Brand?               @relation(fields: [brandId], references: [id])
+  ProductCategory    ProductCategory?     @relation(fields: [categoryId], references: [id])
+  vendor             Vendor?              @relation(fields: [vendorId], references: [id])
   ProductContent     ProductContent?
   image              ProductImage[]
   variants           ProductVariant[]
@@ -120,6 +117,7 @@ model Product {
   @@index([createdAt])
   @@index([updatedAt])
   @@index([categoryId])
+  @@index([specStatus])
 }
 
 model ProductVariant {
@@ -213,40 +211,45 @@ model StrapVariantSpec {
 }
 
 model Order {
-  id                 String                  @id @default(cuid())
-  refNo              String?                 @unique(map: "Order_orderCode_key")
-  customerId         String?
-  shipPhone          String
-  shipAddress        String
-  shipWard           String?
-  shipCity           String
-  subtotal           Decimal                 @db.Decimal(12, 2)
-  shippingFee        Decimal?                @db.Decimal(12, 2)
-  status             OrderStatus             @default(DRAFT)
-  paymentStatus      PaymentStatus           @default(UNPAID)
-  paymentMethod      PaymentMethod?
-  createdAt          DateTime                @default(now())
-  updatedAt          DateTime                @updatedAt
-  customerName       String?
-  notes              String?
-  shipDistrict       String?
-  hasShipment        Boolean
-  reserveType        ReserveType?
-  reserveUntil       DateTime?               @db.Timestamptz(6)
-  depositRequired    Decimal?                @db.Decimal(12, 2)
-  depositPaid        Decimal?                @db.Decimal(12, 2)
-  source             OrderSource             @default(ADMIN)
-  verificationStatus OrderVerificationStatus @default(VERIFIED)
-  Invoice            Invoice[]
-  customer           Customer?               @relation(fields: [customerId], references: [id])
-  items              OrderItem[]
-  Shipment           Shipment?
+  id                    String                  @id @default(cuid())
+  refNo                 String?                 @unique(map: "Order_orderCode_key")
+  customerId            String?
+  shipPhone             String
+  shipAddress           String
+  shipWard              String?
+  shipCity              String
+  subtotal              Decimal                 @db.Decimal(12, 2)
+  shippingFee           Decimal?                @db.Decimal(12, 2)
+  status                OrderStatus             @default(DRAFT)
+  paymentStatus         PaymentStatus           @default(UNPAID)
+  paymentMethod         PaymentMethod?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  customerName          String?
+  notes                 String?
+  shipDistrict          String?
+  hasShipment           Boolean
+  reserveType           ReserveType?
+  reserveUntil          DateTime?               @db.Timestamptz(6)
+  depositRequired       Decimal?                @db.Decimal(12, 2)
+  depositPaid           Decimal?                @db.Decimal(12, 2)
+  source                OrderSource             @default(ADMIN)
+  verificationStatus    OrderVerificationStatus @default(VERIFIED)
+  quick_from_product_id String?
+  quickFromProductId    String?
+  quickFlowType         orderflowtype           @default(STANDARD)
+  Invoice               Invoice[]
+  customer              Customer?               @relation(fields: [customerId], references: [id])
+  items                 OrderItem[]
+  Shipment              Shipment?
 
   @@index([customerId])
   @@index([status])
   @@index([createdAt])
   @@index([source])
   @@index([verificationStatus])
+  @@index([quickFlowType], map: "idx_order_quickFlowType")
+  @@index([quickFromProductId], map: "idx_order_quickFromProductId")
 }
 
 model OrderItem {
@@ -270,6 +273,7 @@ model OrderItem {
   serviceScope      ServiceScope?
   linkedOrderItemId String?
   customerItemNote  String?
+  createdFromFlow   orderflowtype     @default(STANDARD)
   acquisitionItem   AcquisitionItem[]
   OrderItem         OrderItem?        @relation("OrderItemToOrderItem", fields: [linkedOrderItemId], references: [id], onUpdate: NoAction)
   other_OrderItem   OrderItem[]       @relation("OrderItemToOrderItem")
@@ -284,6 +288,7 @@ model OrderItem {
   @@index([serviceCatalogId], map: "idx_order_item_service_catalog_id")
   @@index([linkedOrderItemId], map: "idx_orderitem_linked_order_item")
   @@index([serviceScope], map: "idx_orderitem_service_scope")
+  @@index([createdFromFlow], map: "idx_orderItem_createdFromFlow")
 }
 
 model Reservation {
@@ -354,6 +359,13 @@ model ServiceRequest {
   skuSnapshot             String?
   primaryImageUrlSnapshot String?
   dummy_technical_rel     String?
+  priority                String?              @default("NORMAL")
+  priority_reason         String?
+  priority_source         String?
+  priority_marked_at      DateTime?            @db.Timestamptz(6)
+  priorityReason          String?
+  prioritySource          String?
+  priorityMarkedAt        DateTime?            @db.Timestamptz(6)
   invoice                 Invoice[]
   maintenance             MaintenanceRecord[]
   customer                Customer?            @relation(fields: [customerId], references: [id])
@@ -375,6 +387,7 @@ model ServiceRequest {
   @@index([vendorId], map: "idx_service_request_vendor_id")
   @@index([technicianId])
   @@index([technicianId], map: "idx_service_request_technician_id")
+  @@index([priority, priorityMarkedAt(sort: Desc)], map: "idx_serviceRequest_priority")
 }
 
 model MaintenanceRecord {
@@ -530,6 +543,7 @@ model AcquisitionItem {
   product             Product?               @relation(fields: [productId], references: [id])
   sourceOrderItem     OrderItem?             @relation(fields: [sourceOrderItemId], references: [id])
   variant             ProductVariant?        @relation(fields: [variantId], references: [id])
+  AcquisitionSpecJob  AcquisitionSpecJob?
 
   @@index([acquisitionId])
   @@index([variantId])
@@ -963,11 +977,61 @@ model ProductContent {
   generatedAt        DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @default(now())
+  specBullets        String[]  @default([])
+  hashtags           String[]  @default([])
   Product            Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([brandSnapshot])
   @@index([modelSnapshot])
   @@index([yearSnapshot])
+}
+
+model AcquisitionSpecJob {
+  id                String          @id @default(dbgenerated("gen_random_uuid()"))
+  acquisitionItemId String          @unique
+  productId         String
+  status            String          @default("PENDING")
+  attempts          Int             @default(0)
+  lastError         String?
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now())
+  runAfter          DateTime?       @default(now()) @db.Timestamp(6)
+  priority          Int             @default(100)
+  AcquisitionItem   AcquisitionItem @relation(fields: [acquisitionItemId], references: [id], onDelete: Cascade)
+  Product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([status, createdAt])
+  @@index([runAfter], map: "idx_acq_spec_job_run_after")
+}
+
+model system_job_control {
+  key           String   @id
+  label         String
+  enabled       Boolean  @default(true)
+  batch_size    Int      @default(6)
+  paused_reason String?
+  metadata      Json?
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_by    String?
+}
+
+model system_job_run_log {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processor_key   String
+  trigger_source  String
+  status          String
+  processed_count Int       @default(0)
+  error_count     Int       @default(0)
+  note            String?
+  detail          Json?
+  started_at      DateTime  @default(now()) @db.Timestamptz(6)
+  finished_at     DateTime? @db.Timestamptz(6)
+
+  @@index([processor_key], map: "idx_system_job_run_log_processor_key")
+  @@index([started_at(sort: Desc)], map: "idx_system_job_run_log_started_at")
 }
 
 enum Category {
@@ -1390,4 +1454,15 @@ enum TechnicalIssueExecutionStatus {
   IN_PROGRESS
   DONE
   CANCELED
+}
+
+enum orderflowtype {
+  STANDARD
+  QUICK_ORDER
+}
+
+enum serviceprioritylevel {
+  NORMAL
+  HIGH
+  URGENT
 }
