@@ -18,6 +18,12 @@ export const ProductGroupByResultSchema = z.array(z.object({
   aiPromptUsed: z.string(),
   aiGeneratedAt: z.date(),
   sku: z.string(),
+<<<<<<< HEAD
+=======
+  nickname: z.string(),
+  specStatus: z.string(),
+  storefrontImageKey: z.string(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   _count: z.object({
     id: z.number(),
     slug: z.number(),
@@ -42,6 +48,12 @@ export const ProductGroupByResultSchema = z.array(z.object({
     aiPromptUsed: z.number(),
     aiGeneratedAt: z.number(),
     sku: z.number(),
+<<<<<<< HEAD
+=======
+    nickname: z.number(),
+    specStatus: z.number(),
+    storefrontImageKey: z.number(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
     AcquisitionItem: z.number(),
     InvoiceItem: z.number(),
     maintenanceRecords: z.number(),
@@ -79,7 +91,14 @@ export const ProductGroupByResultSchema = z.array(z.object({
     postContent: z.string().nullable(),
     aiPromptUsed: z.string().nullable(),
     aiGeneratedAt: z.date().nullable(),
+<<<<<<< HEAD
     sku: z.string().nullable()
+=======
+    sku: z.string().nullable(),
+    nickname: z.string().nullable(),
+    specStatus: z.string().nullable(),
+    storefrontImageKey: z.string().nullable()
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   }).nullable().optional(),
   _max: z.object({
     id: z.string().nullable(),
@@ -98,6 +117,13 @@ export const ProductGroupByResultSchema = z.array(z.object({
     postContent: z.string().nullable(),
     aiPromptUsed: z.string().nullable(),
     aiGeneratedAt: z.date().nullable(),
+<<<<<<< HEAD
     sku: z.string().nullable()
+=======
+    sku: z.string().nullable(),
+    nickname: z.string().nullable(),
+    specStatus: z.string().nullable(),
+    storefrontImageKey: z.string().nullable()
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   }).nullable().optional()
 }));

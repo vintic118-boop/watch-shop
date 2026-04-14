@@ -93,7 +93,14 @@ model Product {
   postContent        String?
   aiPromptUsed       String?
   aiGeneratedAt      DateTime?
+<<<<<<< HEAD
   sku                String?             @unique
+=======
+  sku                String?              @unique
+  nickname           String?
+  specStatus         String               @default("PENDING")
+  storefrontImageKey String?
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem    AcquisitionItem[]
   InvoiceItem        InvoiceItem[]
   maintenanceRecords MaintenanceRecord[]

@@ -23,6 +23,12 @@ export const ProductFindUniqueResultSchema = z.nullable(z.object({
   aiPromptUsed: z.string().optional(),
   aiGeneratedAt: z.date().optional(),
   sku: z.string().optional(),
+<<<<<<< HEAD
+=======
+  nickname: z.string().optional(),
+  specStatus: z.string(),
+  storefrontImageKey: z.string().optional(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem: z.array(z.unknown()),
   InvoiceItem: z.array(z.unknown()),
   maintenanceRecords: z.array(z.unknown()),

@@ -85,6 +85,7 @@ export default function MediaPickerInline({
                 onSelect={onChange}
                 profile={profile}
                 selectedKey={value}
+                selectionMode="single"
             />
         </>
     );

@@ -39,6 +39,12 @@ const makeSchema = () => z.object({
   aiPromptUsed: z.string().optional().nullable(),
   aiGeneratedAt: z.coerce.date().optional().nullable(),
   sku: z.string().optional().nullable(),
+<<<<<<< HEAD
+=======
+  nickname: z.string().optional().nullable(),
+  specStatus: z.string().optional(),
+  storefrontImageKey: z.string().optional().nullable(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem: z.lazy(() => AcquisitionItemCreateNestedManyWithoutProductInputObjectSchema).optional(),
   InvoiceItem: z.lazy(() => InvoiceItemCreateNestedManyWithoutProductInputObjectSchema).optional(),
   orderItems: z.lazy(() => OrderItemCreateNestedManyWithoutProductInputObjectSchema).optional(),

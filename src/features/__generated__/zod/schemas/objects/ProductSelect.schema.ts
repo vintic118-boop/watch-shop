@@ -39,6 +39,12 @@ const makeSchema = () => z.object({
   aiPromptUsed: z.boolean().optional(),
   aiGeneratedAt: z.boolean().optional(),
   sku: z.boolean().optional(),
+<<<<<<< HEAD
+=======
+  nickname: z.boolean().optional(),
+  specStatus: z.boolean().optional(),
+  storefrontImageKey: z.boolean().optional(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem: z.union([z.boolean(), z.lazy(() => AcquisitionItemFindManySchema)]).optional(),
   InvoiceItem: z.union([z.boolean(), z.lazy(() => InvoiceItemFindManySchema)]).optional(),
   maintenanceRecords: z.union([z.boolean(), z.lazy(() => MaintenanceRecordFindManySchema)]).optional(),

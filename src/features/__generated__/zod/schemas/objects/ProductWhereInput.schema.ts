@@ -62,6 +62,12 @@ const productwhereinputSchema = z.object({
   aiPromptUsed: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
   aiGeneratedAt: z.union([z.lazy(() => DateTimeNullableFilterObjectSchema), z.coerce.date()]).optional().nullable(),
   sku: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
+<<<<<<< HEAD
+=======
+  nickname: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
+  specStatus: z.union([z.lazy(() => StringFilterObjectSchema), z.string()]).optional(),
+  storefrontImageKey: z.union([z.lazy(() => StringNullableFilterObjectSchema), z.string()]).optional().nullable(),
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
   AcquisitionItem: z.lazy(() => AcquisitionItemListRelationFilterObjectSchema).optional(),
   InvoiceItem: z.lazy(() => InvoiceItemListRelationFilterObjectSchema).optional(),
   maintenanceRecords: z.lazy(() => MaintenanceRecordListRelationFilterObjectSchema).optional(),

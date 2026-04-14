@@ -28,7 +28,14 @@ const makeSchema = () => z.object({
   postContent: z.string().optional().nullable(),
   aiPromptUsed: z.string().optional().nullable(),
   aiGeneratedAt: z.coerce.date().optional().nullable(),
+<<<<<<< HEAD
   sku: z.string().optional().nullable()
+=======
+  sku: z.string().optional().nullable(),
+  nickname: z.string().optional().nullable(),
+  specStatus: z.string().optional(),
+  storefrontImageKey: z.string().optional().nullable()
+>>>>>>> abee89314fe18255e16893fab6a6a809101f3b48
 }).strict();
 export const ProductCreateManyBrandInputObjectSchema: z.ZodType<Prisma.ProductCreateManyBrandInput> = makeSchema() as unknown as z.ZodType<Prisma.ProductCreateManyBrandInput>;
 export const ProductCreateManyBrandInputObjectZodSchema = makeSchema();
